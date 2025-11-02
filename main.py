@@ -99,7 +99,6 @@ from PySide6.QtGui import QPixmap, QPainter, QColor
 #                 pass
 #             self.tcp_client_socket = None
 
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -124,6 +123,8 @@ class MainWindow(QMainWindow):
         # 连接信号槽
         self.connect_signals()
 
+    ###################################################################################################################
+    """通用部分"""
     def init_ui(self):
         """初始化界面设置"""
         # 设置默认显示initialPage页面
@@ -249,7 +250,7 @@ class MainWindow(QMainWindow):
         print("工业相机窗口已关闭，返回主界面")
 
     ###################################################################################################################
-
+    """通讯部分"""
     def switch_to_connect_page(self):
         """切换到通讯页面"""
         # 更新按钮颜色
@@ -258,7 +259,94 @@ class MainWindow(QMainWindow):
         self.ui.stackedWidget.setCurrentIndex(1)
         print("切换到通讯页面")
 
-    ###################################################################################################################
+        # 更新LED状态
+        # def update_led_status(self, led_label, is_connected):
+        #     """更新LED状态"""
+        #     color = QColor(0, 255, 0) if is_connected else QColor(255, 0, 0)  # 绿色或红色
+        #
+        #     # 创建圆形LED
+        #     pixmap = QPixmap(20, 20)
+        #     pixmap.fill(Qt.transparent)
+        #     painter = QPainter(pixmap)
+        #     painter.setRenderHint(QPainter.Antialiasing)
+        #     painter.setBrush(color)
+        #     painter.setPen(Qt.NoPen)
+        #     painter.drawEllipse(0, 0, 20, 20)
+        #     painter.end()
+        #
+        #     led_label.setPixmap(pixmap)
+
+        # 连接工业相机
+        # def connect_industrial_camera(self):
+        #     """连接工业相机"""
+        #     try:
+        #         # 获取IP和端口
+        #         ip = self.ui.IndIP.text().strip()
+        #         port_text = self.ui.IndPort.text().strip()
+        #
+        #         if not ip or not port_text:
+        #             QMessageBox.warning(self, "输入错误", "请输入IP地址和端口号")
+        #             return
+        #
+        #         try:
+        #             port = int(port_text)
+        #         except ValueError:
+        #             QMessageBox.warning(self, "输入错误", "端口号必须是数字")
+        #             return
+        #
+        #         # 连接设备
+        #         success, message = self.ind_communication.connect_to_device(ip, port)
+        #
+        #         # 更新UI状态
+        #         self.ui.InfoCon1.setText(message)
+        #         self.update_led_status(self.ui.led1, success)
+        #
+        #         if success:
+        #             QMessageBox.information(self, "连接成功", "工业相机连接成功！")
+        #         else:
+        #             QMessageBox.warning(self, "连接失败", f"工业相机连接失败: {message}")
+        #
+        #     except Exception as e:
+        #         error_msg = f"连接过程中发生错误: {str(e)}"
+        #         self.ui.InfoCon1.setText("连接错误")
+        #         self.update_led_status(self.ui.led1, False)
+        #         QMessageBox.critical(self, "错误", error_msg)
+
+        # def connect_plc(self):
+        #     """连接PLC"""
+        #     try:
+        #         # 获取IP和端口
+        #         ip = self.ui.PLCIP.text().strip()
+        #         port_text = self.ui.PLCPort.text().strip()
+        #
+        #         if not ip or not port_text:
+        #             QMessageBox.warning(self, "输入错误", "请输入IP地址和端口号")
+        #             return
+        #         try:
+        #             port = int(port_text)
+        #         except ValueError:
+        #             QMessageBox.warning(self, "输入错误", "端口号必须是数字")
+        #             return
+        #
+        #         # 连接设备
+        #         success, message = self.plc_communication.connect_to_device(ip, port)
+        #
+        #         # 更新UI状态
+        #         self.ui.PLCCon.setText(message)
+        #         self.update_led_status(self.ui.led2, success)
+        #
+        #         if success:
+        #             QMessageBox.information(self, "连接成功", "PLC连接成功！")
+        #         else:
+        #             QMessageBox.warning(self, "连接失败", f"PLC连接失败: {message}")
+        #
+        #     except Exception as e:
+        #         error_msg = f"连接过程中发生错误: {str(e)}"
+        #         self.ui.PLCCon.setText("连接错误")
+        #         self.update_led_status(self.ui.led2, False)
+        #         QMessageBox.critical(self, "错误", error_msg)
+
+        ###################################################################################################################
         """yolo"""
     def switch_to_yolo_page(self):
         """切换到YOLO检测页面"""
@@ -272,7 +360,7 @@ class MainWindow(QMainWindow):
         from modules.yolo_detection import YOLODetection
         """开始YOLO检测"""
         try:
-            # 获取文件夹路径（从yoloEdit输入框）
+            # 获取文件夹路径
             folder_path = self.ui.yoloEdit.text().strip()
             model_path = "models/best.pt"
 
@@ -315,7 +403,7 @@ class MainWindow(QMainWindow):
                 # 添加日志消息，
                 self.ui.yoloLog.appendPlainText(message)
 
-                # 自动滚动到底部 -
+                # 自动滚动到底部
                 scrollbar = self.ui.yoloLog.verticalScrollBar()
                 scrollbar.setValue(scrollbar.maximum())
             else:
@@ -348,93 +436,6 @@ class MainWindow(QMainWindow):
             print(f"完成处理错误: {e}")
 
     ###################################################################################################################
-
-    # 更新LED状态
-    # def update_led_status(self, led_label, is_connected):
-    #     """更新LED状态"""
-    #     color = QColor(0, 255, 0) if is_connected else QColor(255, 0, 0)  # 绿色或红色
-    #
-    #     # 创建圆形LED
-    #     pixmap = QPixmap(20, 20)
-    #     pixmap.fill(Qt.transparent)
-    #     painter = QPainter(pixmap)
-    #     painter.setRenderHint(QPainter.Antialiasing)
-    #     painter.setBrush(color)
-    #     painter.setPen(Qt.NoPen)
-    #     painter.drawEllipse(0, 0, 20, 20)
-    #     painter.end()
-    #
-    #     led_label.setPixmap(pixmap)
-
-    # 连接工业相机
-    # def connect_industrial_camera(self):
-    #     """连接工业相机"""
-    #     try:
-    #         # 获取IP和端口
-    #         ip = self.ui.IndIP.text().strip()
-    #         port_text = self.ui.IndPort.text().strip()
-    #
-    #         if not ip or not port_text:
-    #             QMessageBox.warning(self, "输入错误", "请输入IP地址和端口号")
-    #             return
-    #
-    #         try:
-    #             port = int(port_text)
-    #         except ValueError:
-    #             QMessageBox.warning(self, "输入错误", "端口号必须是数字")
-    #             return
-    #
-    #         # 连接设备
-    #         success, message = self.ind_communication.connect_to_device(ip, port)
-    #
-    #         # 更新UI状态
-    #         self.ui.InfoCon1.setText(message)
-    #         self.update_led_status(self.ui.led1, success)
-    #
-    #         if success:
-    #             QMessageBox.information(self, "连接成功", "工业相机连接成功！")
-    #         else:
-    #             QMessageBox.warning(self, "连接失败", f"工业相机连接失败: {message}")
-    #
-    #     except Exception as e:
-    #         error_msg = f"连接过程中发生错误: {str(e)}"
-    #         self.ui.InfoCon1.setText("连接错误")
-    #         self.update_led_status(self.ui.led1, False)
-    #         QMessageBox.critical(self, "错误", error_msg)
-
-    # def connect_plc(self):
-    #     """连接PLC"""
-    #     try:
-    #         # 获取IP和端口
-    #         ip = self.ui.PLCIP.text().strip()
-    #         port_text = self.ui.PLCPort.text().strip()
-    #
-    #         if not ip or not port_text:
-    #             QMessageBox.warning(self, "输入错误", "请输入IP地址和端口号")
-    #             return
-    #         try:
-    #             port = int(port_text)
-    #         except ValueError:
-    #             QMessageBox.warning(self, "输入错误", "端口号必须是数字")
-    #             return
-    #
-    #         # 连接设备
-    #         success, message = self.plc_communication.connect_to_device(ip, port)
-    #
-    #         # 更新UI状态
-    #         self.ui.PLCCon.setText(message)
-    #         self.update_led_status(self.ui.led2, success)
-    #
-    #         if success:
-    #             QMessageBox.information(self, "连接成功", "PLC连接成功！")
-    #         else:
-    #             QMessageBox.warning(self, "连接失败", f"PLC连接失败: {message}")
-    #
-    #     except Exception as e:
-    #         error_msg = f"连接过程中发生错误: {str(e)}"
-    #         self.ui.PLCCon.setText("连接错误")
-    #         self.update_led_status(self.ui.led2, False)
-    #         QMessageBox.critical(self, "错误", error_msg)
 
     def closeEvent(self, event):
         """关闭事件处理"""
