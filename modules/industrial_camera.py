@@ -477,7 +477,7 @@ class IndustrialCameraWindow(QMainWindow):
     def setup_default_state(self):
         """设置默认状态"""
         # 默认显示手动拍照页面
-        self.switch_page(1)
+        self.switch_page(0)
 
         # 设置自动拍照按钮初始状态
         self.update_auto_capture_buttons(False)

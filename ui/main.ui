@@ -413,38 +413,32 @@
       </widget>
      </widget>
      <widget class="QWidget" name="yoloPage">
-      <widget class="QLabel" name="label">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>30</y>
-         <width>361</width>
-         <height>331</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>TextLabel</string>
-       </property>
-      </widget>
       <widget class="QWidget" name="">
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>370</y>
-         <width>681</width>
-         <height>26</height>
+         <y>0</y>
+         <width>671</width>
+         <height>411</height>
         </rect>
        </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <widget class="QLineEdit" name="yoloEdit"/>
+         <widget class="QPlainTextEdit" name="yoloLog"/>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
-          <property name="text">
-           <string>PushButton</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QLineEdit" name="yoloEdit"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton">
+            <property name="text">
+             <string>检测</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>

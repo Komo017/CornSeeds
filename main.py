@@ -1,4 +1,3 @@
-
 import sys
 import os
 import socket
@@ -113,6 +112,7 @@ class MainWindow(QMainWindow):
         # 初始化变量
         self.industrial_window = None
         self.current_active_button = None
+        self.yolo_thread = None
 
         # 初始化通讯管理器
         # self.ind_communication = CommunicationManager()  # 工业相机通讯
@@ -142,6 +142,20 @@ class MainWindow(QMainWindow):
         # self.ui.PLCIP.setText("192.168.0.11")
         # self.ui.PLCPort.setText("2000")
 
+    def reset_all_buttons_style(self):
+        """重置所有按钮为默认颜色"""
+        left_buttons = [
+            self.ui.industrialC,
+            self.ui.hyperspectralC,
+            self.ui.connect,
+            self.ui.yoloDetection,
+            self.ui.F2,
+            self.ui.F3
+        ]
+
+        for button in left_buttons:
+            button.setStyleSheet("background-color: none;")
+
     def connect_signals(self):
         """连接信号和槽"""
         try:
@@ -151,7 +165,8 @@ class MainWindow(QMainWindow):
                 lambda: self.on_feature_button_clicked(self.ui.hyperspectralC, "高光谱相机"))
             self.ui.connect.clicked.connect(self.switch_to_connect_page)
 
-            self.ui.F1.clicked.connect(lambda: self.on_feature_button_clicked(self.ui.F1, "F1功能"))
+            self.ui.yoloDetection.clicked.connect(self.switch_to_yolo_page)
+            self.ui.pushButton.clicked.connect(self.start_yolo_detection)
             self.ui.F2.clicked.connect(lambda: self.on_feature_button_clicked(self.ui.F2, "F2功能"))
             self.ui.F3.clicked.connect(lambda: self.on_feature_button_clicked(self.ui.F3, "F3功能"))
 
@@ -167,6 +182,172 @@ class MainWindow(QMainWindow):
 
         except Exception as e:
             print(f"信号连接错误: {e}")
+
+    def on_feature_button_clicked(self, button, feature_name):
+        """功能按钮点击处理"""
+        # 更新按钮颜色
+        self.update_button_color(button)
+        # 显示未实现功能提示
+        self.show_not_implemented(feature_name)
+
+    def update_button_color(self, clicked_button):
+        """更新按钮颜色"""
+        left_buttons = [
+            self.ui.industrialC,
+            self.ui.hyperspectralC,
+            self.ui.connect,
+            self.ui.yoloDetection,
+            self.ui.F2,
+            self.ui.F3
+        ]
+
+        # 重置所有按钮颜色
+        for button in left_buttons:
+            button.setStyleSheet("background-color: none;")
+
+        # 设置点击按钮的背景色为蓝色
+        clicked_button.setStyleSheet("background-color: #007bff; color: white;")
+        self.current_active_button = clicked_button
+
+    def show_not_implemented(self, feature_name):
+        """显示未实现功能的消息"""
+        QMessageBox.information(self, "提示", f"{feature_name}正在开发中...")
+
+    ###################################################################################################################
+        """工业相机"""
+    def open_industrial_camera(self):
+        """工业相机"""
+        try:
+            # 更新工业相机按钮颜色
+            self.update_button_color(self.ui.industrialC)
+
+            # 导入并创建工业相机窗口
+            from modules.industrial_camera import IndustrialCameraWindow
+
+            if self.industrial_window is None:
+                self.industrial_window = IndustrialCameraWindow()
+                # 连接关闭信号，以便在工业相机窗口关闭时清理引用
+                self.industrial_window.close_signal.connect(self.on_industrial_window_closed)
+
+            # 隐藏主窗口，显示工业相机窗口
+            self.hide()
+            self.industrial_window.show()
+
+            print("打开工业相机窗口")
+
+        except ImportError as e:
+            print(f"工业相机模块导入失败: {e}")
+            QMessageBox.critical(self, "错误", f"无法加载工业相机模块: {str(e)}")
+        except Exception as e:
+            print(f"打开工业相机窗口错误: {e}")
+            QMessageBox.critical(self, "错误", f"打开工业相机窗口失败: {str(e)}")
+
+    def on_industrial_window_closed(self):
+        """工业相机窗口关闭时的处理"""
+        self.industrial_window = None
+        self.show()  # 重新显示主窗口
+        print("工业相机窗口已关闭，返回主界面")
+
+    ###################################################################################################################
+
+    def switch_to_connect_page(self):
+        """切换到通讯页面"""
+        # 更新按钮颜色
+        self.update_button_color(self.ui.connect)
+        # 切换到connectPage页面
+        self.ui.stackedWidget.setCurrentIndex(1)
+        print("切换到通讯页面")
+
+    ###################################################################################################################
+        """yolo"""
+    def switch_to_yolo_page(self):
+        """切换到YOLO检测页面"""
+        # 更新按钮颜色
+        self.update_button_color(self.ui.yoloDetection)
+        # 切换到yoloPage页面
+        self.ui.stackedWidget.setCurrentIndex(2)
+        print("切换到YOLO检测页面")
+
+    def start_yolo_detection(self):
+        from modules.yolo_detection import YOLODetection
+        """开始YOLO检测"""
+        try:
+            # 获取文件夹路径（从yoloEdit输入框）
+            folder_path = self.ui.yoloEdit.text().strip()
+            model_path = "models/best.pt"
+
+            # 验证文件夹路径
+            if not folder_path or not os.path.exists(folder_path):
+                QMessageBox.warning(self, "路径错误", "请输入有效的文件夹路径")
+                return
+
+            # 如果已有检测线程在运行，先停止
+            if self.yolo_thread and self.yolo_thread.isRunning():
+                self.yolo_thread.stop_detection()
+                self.yolo_thread.wait()
+
+            # 创建并启动检测线程
+            self.yolo_thread = YOLODetection(folder_path, model_path)
+
+            # 连接信号
+            self.yolo_thread.detection_finished.connect(self.on_yolo_finished)
+            self.yolo_thread.log_message.connect(self.update_yolo_log)
+
+            # 更新UI状态
+            self.ui.pushButton.setEnabled(False)
+            self.ui.pushButton.setText("检测中...")
+
+            # 清空之前的日志
+            if hasattr(self.ui, 'yoloLog'):
+                self.ui.yoloLog.clear()
+
+            self.yolo_thread.start()
+
+            QMessageBox.information(self, "开始检测", "YOLO检测已开始")
+
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"启动检测失败: {str(e)}")
+
+    def update_yolo_log(self, message):
+        """更新检测日志到 QPlainTextEdit"""
+        try:
+            if hasattr(self.ui, 'yoloLog'):
+                # 添加日志消息，
+                self.ui.yoloLog.appendPlainText(message)
+
+                # 自动滚动到底部 -
+                scrollbar = self.ui.yoloLog.verticalScrollBar()
+                scrollbar.setValue(scrollbar.maximum())
+            else:
+                print(f"YOLO日志: {message}")
+        except Exception as e:
+            print(f"更新日志错误: {e}")
+
+    def on_yolo_finished(self, status):
+        """检测完成处理"""
+        try:
+            # 恢复按钮状态
+            self.ui.pushButton.setEnabled(True)
+            self.ui.pushButton.setText("开始检测")
+
+            # 显示完成消息
+            if status == "success":
+                finish_msg = "所有图片检测完成！"
+                QMessageBox.information(self, "完成", finish_msg)
+            elif status == "interrupted":
+                finish_msg = "检测已被中断"
+                QMessageBox.information(self, "中断", finish_msg)
+            else:
+                finish_msg = "检测过程中出现错误"
+                QMessageBox.critical(self, "错误", finish_msg)
+
+            # 清理线程
+            self.yolo_thread = None
+
+        except Exception as e:
+            print(f"完成处理错误: {e}")
+
+    ###################################################################################################################
 
     # 更新LED状态
     # def update_led_status(self, led_label, is_connected):
@@ -254,91 +435,6 @@ class MainWindow(QMainWindow):
     #         self.ui.PLCCon.setText("连接错误")
     #         self.update_led_status(self.ui.led2, False)
     #         QMessageBox.critical(self, "错误", error_msg)
-
-    # def on_feature_button_clicked(self, button, feature_name):
-    #     """功能按钮点击处理"""
-    #     # 更新按钮颜色
-    #     self.update_button_color(button)
-    #     # 显示未实现功能提示
-    #     self.show_not_implemented(feature_name)
-    #
-    def switch_to_connect_page(self):
-        """切换到通讯页面"""
-        # 更新按钮颜色
-        self.update_button_color(self.ui.connect)
-        # 切换到connectPage页面
-        self.ui.stackedWidget.setCurrentIndex(1)
-        print("切换到通讯页面")
-
-    def update_button_color(self, clicked_button):
-        """更新按钮颜色"""
-        left_buttons = [
-            self.ui.industrialC,
-            self.ui.hyperspectralC,
-            self.ui.connect,
-            self.ui.F1,
-            self.ui.F2,
-            self.ui.F3
-        ]
-
-        # 重置所有按钮颜色
-        for button in left_buttons:
-            button.setStyleSheet("background-color: none;")
-
-        # 设置点击按钮的背景色为蓝色
-        clicked_button.setStyleSheet("background-color: #007bff; color: white;")
-        self.current_active_button = clicked_button
-
-    def reset_all_buttons_style(self):
-        """重置所有按钮为默认颜色"""
-        left_buttons = [
-            self.ui.industrialC,
-            self.ui.hyperspectralC,
-            self.ui.connect,
-            self.ui.F1,
-            self.ui.F2,
-            self.ui.F3
-        ]
-
-        for button in left_buttons:
-            button.setStyleSheet("background-color: none;")
-
-    def open_industrial_camera(self):
-        """工业相机"""
-        try:
-            # 更新工业相机按钮颜色
-            self.update_button_color(self.ui.industrialC)
-
-            # 导入并创建工业相机窗口
-            from modules.industrial_camera import IndustrialCameraWindow
-
-            if self.industrial_window is None:
-                self.industrial_window = IndustrialCameraWindow()
-                # 连接关闭信号，以便在工业相机窗口关闭时清理引用
-                self.industrial_window.close_signal.connect(self.on_industrial_window_closed)
-
-            # 隐藏主窗口，显示工业相机窗口
-            self.hide()
-            self.industrial_window.show()
-
-            print("打开工业相机窗口")
-
-        except ImportError as e:
-            print(f"工业相机模块导入失败: {e}")
-            QMessageBox.critical(self, "错误", f"无法加载工业相机模块: {str(e)}")
-        except Exception as e:
-            print(f"打开工业相机窗口错误: {e}")
-            QMessageBox.critical(self, "错误", f"打开工业相机窗口失败: {str(e)}")
-
-    def show_not_implemented(self, feature_name):
-        """显示未实现功能的消息"""
-        QMessageBox.information(self, "提示", f"{feature_name}正在开发中...")
-
-    def on_industrial_window_closed(self):
-        """工业相机窗口关闭时的处理"""
-        self.industrial_window = None
-        self.show()  # 重新显示主窗口
-        print("工业相机窗口已关闭，返回主界面")
 
     def closeEvent(self, event):
         """关闭事件处理"""
