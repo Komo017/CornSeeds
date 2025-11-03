@@ -7,98 +7,6 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget,
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap, QPainter, QColor
 
-
-# 通讯管理器
-# class CommunicationManager:
-#     """通讯管理器"""
-#
-#     @staticmethod
-#     def bytes2int(bytes_data):
-#         """字节转整数"""
-#         try:
-#             result = 0
-#             for byte in bytes_data:
-#                 result = result * 256 + int(byte)
-#             return result
-#         except Exception as e:
-#             print(f"字节转换错误: {e}")
-#             return 0
-#
-#     def __init__(self):
-#         self.tcp_client_socket = None   # TCP socket对象
-#         self.is_connected = False       # 是否已连接
-#         self.receive_thread = None      # 接收数据线程
-#         self.should_receive = False     # 接收控制标志是否继续运行
-#
-#     def connect_to_device(self, ip, port):
-#         """连接到设备"""
-#         try:
-#             # 创建socket
-#             self.tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#             # 设置超时时间
-#             self.tcp_client_socket.settimeout(5)
-#             # 连接设备
-#             self.tcp_client_socket.connect((ip, port))
-#             self.is_connected = True
-#
-#             # 启动数据接收线程
-#             self.should_receive = True      # 允许接收线程运行
-#             self.receive_thread = threading.Thread(target=self._receive_data)  # 新线程的目标函数是_receive_data
-#             self.receive_thread.daemon = True  # 主程序退出时自动结束
-#             self.receive_thread.start()
-#
-#             return True, "连接成功"
-#
-#         except socket.timeout:
-#             return False, "连接超时"
-#         except ConnectionRefusedError:
-#             return False, "连接被拒绝"
-#         except Exception as e:
-#             return False, f"连接错误: {str(e)}"
-#
-#     def _receive_data(self):  # _为内部方法
-#         """接收数据的线程函数"""
-#         while self.should_receive and self.is_connected:
-#             try:   # 循环条件：需要接收且处于连接状态
-#                 recv_data = self.tcp_client_socket.recv(1024)  # 最多接收1024字节
-#                 if recv_data:
-#                     res_data = list(recv_data)
-#                     print(f"接收到数据: {res_data}")
-#
-#                     # self.tcp_client_socket.send(recv_data)
-#                     # 预留：回声功能
-#                 else:  # 连接断开就退出
-#                     self.is_connected = False
-#                     break
-#             except Exception as e:
-#                 if self.should_receive:
-#                     print(f"数据接收错误: {e}")
-#                 break
-#
-#     def send_data(self, data):
-#         """发送数据到设备"""
-#         if self.is_connected and self.tcp_client_socket:
-#             try:
-#                 self.tcp_client_socket.send(data)
-#                 return True
-#             except Exception as e:
-#                 print(f"发送数据错误: {e}")
-#                 self.is_connected = False
-#                 return False
-#         return False
-#
-#     def disconnect(self):
-#         """断开连接"""
-#         self.should_receive = False
-#         self.is_connected = False
-#
-#         if self.tcp_client_socket:
-#             try:
-#                 self.tcp_client_socket.close()
-#             except:
-#                 pass
-#             self.tcp_client_socket = None
-
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -112,10 +20,6 @@ class MainWindow(QMainWindow):
         self.industrial_window = None
         self.current_active_button = None
         self.yolo_thread = None
-
-        # 初始化通讯管理器
-        # self.ind_communication = CommunicationManager()  # 工业相机通讯
-        # self.plc_communication = CommunicationManager()  # PLC通讯
 
         # 初始化界面
         self.init_ui()
@@ -133,15 +37,32 @@ class MainWindow(QMainWindow):
         # 初始化所有按钮为默认颜色
         self.reset_all_buttons_style()
 
-        # # 初始化LED状态
-        # self.update_led_status(self.ui.led1, False)
-        # self.update_led_status(self.ui.led2, False)
-        #
-        # # 设置默认IP和端口
-        # self.ui.IndIP.setText("192.168.0.10")
-        # self.ui.IndPort.setText("2000")
-        # self.ui.PLCIP.setText("192.168.0.11")
-        # self.ui.PLCPort.setText("2000")
+        # 初始化LED状态
+        self.update_led_status(self.ui.led1, False)
+        self.update_led_status(self.ui.led2, False)
+
+        # 设置默认IP和端口
+        self.ui.IndIP.setText("192.168.0.10")
+        self.ui.IndPort.setText("2000")
+        self.ui.PLCIP.setText("192.168.0.11")
+        self.ui.PLCPort.setText("2000")
+
+    def update_led_status(self, led_label, is_connected):
+        """更新LED状态"""
+
+        color = QColor(0, 255, 0) if is_connected else QColor(255, 0, 0)  # 绿色或红色
+
+        # 创建圆形LED
+        pixmap = QPixmap(20, 20)
+        pixmap.fill(QColor(0, 0, 0, 0))  # 透明背景
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setBrush(color)
+        painter.setPen(Qt.NoPen)
+        painter.drawEllipse(0, 0, 20, 20)
+        painter.end()
+
+        led_label.setPixmap(pixmap)
 
     def reset_all_buttons_style(self):
         """重置所有按钮为默认颜色"""
@@ -170,10 +91,6 @@ class MainWindow(QMainWindow):
             self.ui.pushButton.clicked.connect(self.start_yolo_detection)
             self.ui.F2.clicked.connect(lambda: self.on_feature_button_clicked(self.ui.F2, "F2功能"))
             self.ui.F3.clicked.connect(lambda: self.on_feature_button_clicked(self.ui.F3, "F3功能"))
-
-            # 通讯按钮点击
-            # self.ui.IndCon.clicked.connect(self.connect_industrial_camera)
-            # self.ui.InfoCon2.clicked.connect(self.connect_plc)
 
             # 底部控制按钮
             self.ui.Start.clicked.connect(lambda: self.show_not_implemented("启动功能"))
@@ -251,6 +168,7 @@ class MainWindow(QMainWindow):
 
     ###################################################################################################################
     """通讯部分"""
+
     def switch_to_connect_page(self):
         """切换到通讯页面"""
         # 更新按钮颜色
@@ -259,95 +177,133 @@ class MainWindow(QMainWindow):
         self.ui.stackedWidget.setCurrentIndex(1)
         print("切换到通讯页面")
 
-        # 更新LED状态
-        # def update_led_status(self, led_label, is_connected):
-        #     """更新LED状态"""
-        #     color = QColor(0, 255, 0) if is_connected else QColor(255, 0, 0)  # 绿色或红色
-        #
-        #     # 创建圆形LED
-        #     pixmap = QPixmap(20, 20)
-        #     pixmap.fill(Qt.transparent)
-        #     painter = QPainter(pixmap)
-        #     painter.setRenderHint(QPainter.Antialiasing)
-        #     painter.setBrush(color)
-        #     painter.setPen(Qt.NoPen)
-        #     painter.drawEllipse(0, 0, 20, 20)
-        #     painter.end()
-        #
-        #     led_label.setPixmap(pixmap)
+        # 初始化TCP客户端
+        self.init_tcp_clients()
 
-        # 连接工业相机
-        # def connect_industrial_camera(self):
-        #     """连接工业相机"""
-        #     try:
-        #         # 获取IP和端口
-        #         ip = self.ui.IndIP.text().strip()
-        #         port_text = self.ui.IndPort.text().strip()
-        #
-        #         if not ip or not port_text:
-        #             QMessageBox.warning(self, "输入错误", "请输入IP地址和端口号")
-        #             return
-        #
-        #         try:
-        #             port = int(port_text)
-        #         except ValueError:
-        #             QMessageBox.warning(self, "输入错误", "端口号必须是数字")
-        #             return
-        #
-        #         # 连接设备
-        #         success, message = self.ind_communication.connect_to_device(ip, port)
-        #
-        #         # 更新UI状态
-        #         self.ui.InfoCon1.setText(message)
-        #         self.update_led_status(self.ui.led1, success)
-        #
-        #         if success:
-        #             QMessageBox.information(self, "连接成功", "工业相机连接成功！")
-        #         else:
-        #             QMessageBox.warning(self, "连接失败", f"工业相机连接失败: {message}")
-        #
-        #     except Exception as e:
-        #         error_msg = f"连接过程中发生错误: {str(e)}"
-        #         self.ui.InfoCon1.setText("连接错误")
-        #         self.update_led_status(self.ui.led1, False)
-        #         QMessageBox.critical(self, "错误", error_msg)
+    def init_tcp_clients(self):
+        """初始化TCP客户端"""
+        from modules.tcp_client import TCPClient
 
-        # def connect_plc(self):
-        #     """连接PLC"""
-        #     try:
-        #         # 获取IP和端口
-        #         ip = self.ui.PLCIP.text().strip()
-        #         port_text = self.ui.PLCPort.text().strip()
-        #
-        #         if not ip or not port_text:
-        #             QMessageBox.warning(self, "输入错误", "请输入IP地址和端口号")
-        #             return
-        #         try:
-        #             port = int(port_text)
-        #         except ValueError:
-        #             QMessageBox.warning(self, "输入错误", "端口号必须是数字")
-        #             return
-        #
-        #         # 连接设备
-        #         success, message = self.plc_communication.connect_to_device(ip, port)
-        #
-        #         # 更新UI状态
-        #         self.ui.PLCCon.setText(message)
-        #         self.update_led_status(self.ui.led2, success)
-        #
-        #         if success:
-        #             QMessageBox.information(self, "连接成功", "PLC连接成功！")
-        #         else:
-        #             QMessageBox.warning(self, "连接失败", f"PLC连接失败: {message}")
-        #
-        #     except Exception as e:
-        #         error_msg = f"连接过程中发生错误: {str(e)}"
-        #         self.ui.PLCCon.setText("连接错误")
-        #         self.update_led_status(self.ui.led2, False)
-        #         QMessageBox.critical(self, "错误", error_msg)
+        # 创建工业相机TCP客户端
+        self.ind_tcp_client = TCPClient()
+        # 创建PLC TCP客户端
+        self.plc_tcp_client = TCPClient()
 
-        ###################################################################################################################
-        """yolo"""
+        # 设置PLC数据接收回调
+        self.plc_tcp_client.set_receive_callback(self.on_plc_data_received)
+
+        # 连接按钮信号
+        self.ui.IndCon.clicked.connect(self.connect_industrial_tcp)
+        self.ui.InfoCon2.clicked.connect(self.connect_plc_tcp)
+
+    def connect_industrial_tcp(self):
+        """连接工业相机TCP"""
+        try:
+            # 获取IP和端口
+            ip = self.ui.IndIP.text().strip()
+            port_text = self.ui.IndPort.text().strip()
+
+            if not ip or not port_text:
+                QMessageBox.warning(self, "输入错误", "请输入IP地址和端口号")
+                return
+
+            try:
+                port = int(port_text)
+            except ValueError:
+                QMessageBox.warning(self, "输入错误", "端口号必须是数字")
+                return
+
+            # 连接设备
+            success, message = self.ind_tcp_client.connect_to_server(ip, port)
+
+            # 更新UI状态
+            self.ui.InfoCon1.setText(message)
+            self.update_led_status(self.ui.led1, success)
+
+            if success:
+                QMessageBox.information(self, "连接成功", "工业相机TCP连接成功！")
+                QTimer.singleShot(1000,
+                                  lambda: QMessageBox.information(self, "连接状态", "工业相机连接成功但是暂时没有数据"))
+            else:
+                QMessageBox.warning(self, "连接失败", f"工业相机TCP连接失败: {message}")
+
+        except Exception as e:
+            error_msg = f"连接过程中发生错误: {str(e)}"
+            self.ui.InfoCon1.setText("连接错误")
+            self.update_led_status(self.ui.led1, False)
+            QMessageBox.critical(self, "错误", error_msg)
+
+    def connect_plc_tcp(self):
+        """连接PLC TCP"""
+        try:
+            # 获取IP和端口
+            ip = self.ui.PLCIP.text().strip()
+            port_text = self.ui.PLCPort.text().strip()
+
+            if not ip or not port_text:
+                QMessageBox.warning(self, "输入错误", "请输入IP地址和端口号")
+                return
+
+            try:
+                port = int(port_text)
+            except ValueError:
+                QMessageBox.warning(self, "输入错误", "端口号必须是数字")
+                return
+
+            # 连接设备
+            success, message = self.plc_tcp_client.connect_to_server(ip, port)
+
+            # 更新UI状态
+            self.ui.PLCCon.setText(message)
+            self.update_led_status(self.ui.led2, success)
+
+            if success:
+                QMessageBox.information(self, "连接成功", "PLC TCP连接成功！")
+                QTimer.singleShot(1000,
+                                  lambda: QMessageBox.information(self, "连接状态", "PLC连接成功但是暂时没有数据"))
+            else:
+                QMessageBox.warning(self, "连接失败", f"PLC TCP连接失败: {message}")
+
+        except Exception as e:
+            error_msg = f"连接过程中发生错误: {str(e)}"
+            self.ui.PLCCon.setText("连接错误")
+            self.update_led_status(self.ui.led2, False)
+            QMessageBox.critical(self, "错误", error_msg)
+
+    def on_plc_data_received(self, data):
+        """PLC数据接收回调"""
+        try:
+            # 在PLCLog中显示接收到的数据
+            if hasattr(self.ui, 'PLCLog'):
+                # 将数据转换为字符串显示
+                data_str = f"接收到数据: {data}"
+                self.ui.PLCLog.appendPlainText(data_str)
+
+                # 自动滚动到底部
+                scrollbar = self.ui.PLCLog.verticalScrollBar()
+                scrollbar.setValue(scrollbar.maximum())
+        except Exception as e:
+            print(f"更新PLC日志错误: {e}")
+
+    def closeEvent(self, event):
+        """关闭事件处理"""
+        try:
+            # 断开TCP连接
+            if hasattr(self, 'ind_tcp_client'):
+                self.ind_tcp_client.disconnect()
+            if hasattr(self, 'plc_tcp_client'):
+                self.plc_tcp_client.disconnect()
+
+            # 关闭工业相机窗口
+            if self.industrial_window is not None:
+                self.industrial_window.close()
+        except Exception as e:
+            print(f"清理过程中出现错误: {e}")
+
+        event.accept()
+
+    ###################################################################################################################
+    """yolo"""
     def switch_to_yolo_page(self):
         """切换到YOLO检测页面"""
         # 更新按钮颜色

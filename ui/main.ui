@@ -186,7 +186,7 @@
       </rect>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="initialPage"/>
      <widget class="QWidget" name="connectPage">
@@ -342,9 +342,9 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>20</y>
+          <y>100</y>
           <width>681</width>
-          <height>191</height>
+          <height>111</height>
          </rect>
         </property>
         <attribute name="horizontalHeaderVisible">
@@ -410,10 +410,20 @@
          </property>
         </column>
        </widget>
+       <widget class="QPlainTextEdit" name="PLCLog">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>681</width>
+          <height>81</height>
+         </rect>
+        </property>
+       </widget>
       </widget>
      </widget>
      <widget class="QWidget" name="yoloPage">
-      <widget class="QWidget" name="">
+      <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
          <x>10</x>

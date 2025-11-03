@@ -1,7 +1,7 @@
 # # -*- coding: utf-8 -*-
 #
 # ################################################################################
-# ## Form generated from reading UI file 'mainkBvBWA.ui'
+# ## Form generated from reading UI file 'maindwAOvm.ui'
 # ##
 # ## Created by: Qt User Interface Compiler version 6.10.0
 # ##
@@ -16,9 +16,9 @@
 #     QImage, QKeySequence, QLinearGradient, QPainter,
 #     QPalette, QPixmap, QRadialGradient, QTransform)
 # from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout, QHeaderView,
-#     QLabel, QLineEdit, QMainWindow, QPushButton,
-#     QSizePolicy, QStackedWidget, QStatusBar, QTableWidget,
-#     QTableWidgetItem, QVBoxLayout, QWidget)
+#     QLabel, QLineEdit, QMainWindow, QPlainTextEdit,
+#     QPushButton, QSizePolicy, QStackedWidget, QStatusBar,
+#     QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 # #import icons_rc
 #
 # class Ui_MainWindow(object):
@@ -248,24 +248,31 @@
 #         self.stackedWidget.addWidget(self.connectPage)
 #         self.yoloPage = QWidget()
 #         self.yoloPage.setObjectName(u"yoloPage")
-#         self.label = QLabel(self.yoloPage)
-#         self.label.setObjectName(u"label")
-#         self.label.setGeometry(QRect(10, 30, 361, 331))
-#         self.layoutWidget = QWidget(self.yoloPage)
-#         self.layoutWidget.setObjectName(u"layoutWidget")
-#         self.layoutWidget.setGeometry(QRect(10, 370, 681, 26))
-#         self.horizontalLayout_7 = QHBoxLayout(self.layoutWidget)
+#         self.widget = QWidget(self.yoloPage)
+#         self.widget.setObjectName(u"widget")
+#         self.widget.setGeometry(QRect(10, 0, 671, 411))
+#         self.verticalLayout_4 = QVBoxLayout(self.widget)
+#         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+#         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+#         self.yoloLog = QPlainTextEdit(self.widget)
+#         self.yoloLog.setObjectName(u"yoloLog")
+#
+#         self.verticalLayout_4.addWidget(self.yoloLog)
+#
+#         self.horizontalLayout_7 = QHBoxLayout()
 #         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-#         self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
-#         self.yoloEdit = QLineEdit(self.layoutWidget)
+#         self.yoloEdit = QLineEdit(self.widget)
 #         self.yoloEdit.setObjectName(u"yoloEdit")
 #
 #         self.horizontalLayout_7.addWidget(self.yoloEdit)
 #
-#         self.pushButton = QPushButton(self.layoutWidget)
+#         self.pushButton = QPushButton(self.widget)
 #         self.pushButton.setObjectName(u"pushButton")
 #
 #         self.horizontalLayout_7.addWidget(self.pushButton)
+#
+#
+#         self.verticalLayout_4.addLayout(self.horizontalLayout_7)
 #
 #         self.stackedWidget.addWidget(self.yoloPage)
 #         self.bottomGroup = QGroupBox(self.centralwidget)
@@ -350,8 +357,7 @@
 #         ___qtablewidgetitem3.setText(QCoreApplication.translate("MainWindow", u"\u64cd\u4f5c", None));
 #         ___qtablewidgetitem4 = self.tableWidget.horizontalHeaderItem(4)
 #         ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"\u503c", None));
-#         self.label.setText(QCoreApplication.translate("MainWindow", u"TextLabel", None))
-#         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"PushButton", None))
+#         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u68c0\u6d4b", None))
 #         self.bottomGroup.setTitle("")
 #         self.home.setText("")
 #         self.Start.setText(QCoreApplication.translate("MainWindow", u"\u542f\u52a8", None))
@@ -365,10 +371,11 @@
 #     # retranslateUi
 #
 
+
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'maindwAOvm.ui'
+## Form generated from reading UI file 'mainToqaaZ.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.0
 ##
@@ -607,33 +614,36 @@ class Ui_MainWindow(object):
         __qtablewidgetitem9 = QTableWidgetItem()
         self.tableWidget.setVerticalHeaderItem(4, __qtablewidgetitem9)
         self.tableWidget.setObjectName(u"tableWidget")
-        self.tableWidget.setGeometry(QRect(10, 20, 681, 191))
+        self.tableWidget.setGeometry(QRect(10, 100, 681, 111))
         self.tableWidget.horizontalHeader().setVisible(True)
         self.tableWidget.horizontalHeader().setCascadingSectionResizes(False)
         self.tableWidget.horizontalHeader().setDefaultSectionSize(134)
         self.tableWidget.verticalHeader().setVisible(True)
+        self.PLCLog = QPlainTextEdit(self.monitorPara)
+        self.PLCLog.setObjectName(u"PLCLog")
+        self.PLCLog.setGeometry(QRect(10, 20, 681, 81))
         self.stackedWidget.addWidget(self.connectPage)
         self.yoloPage = QWidget()
         self.yoloPage.setObjectName(u"yoloPage")
-        self.widget = QWidget(self.yoloPage)
-        self.widget.setObjectName(u"widget")
-        self.widget.setGeometry(QRect(10, 0, 671, 411))
-        self.verticalLayout_4 = QVBoxLayout(self.widget)
+        self.layoutWidget = QWidget(self.yoloPage)
+        self.layoutWidget.setObjectName(u"layoutWidget")
+        self.layoutWidget.setGeometry(QRect(10, 0, 671, 411))
+        self.verticalLayout_4 = QVBoxLayout(self.layoutWidget)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.yoloLog = QPlainTextEdit(self.widget)
+        self.yoloLog = QPlainTextEdit(self.layoutWidget)
         self.yoloLog.setObjectName(u"yoloLog")
 
         self.verticalLayout_4.addWidget(self.yoloLog)
 
         self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.yoloEdit = QLineEdit(self.widget)
+        self.yoloEdit = QLineEdit(self.layoutWidget)
         self.yoloEdit.setObjectName(u"yoloEdit")
 
         self.horizontalLayout_7.addWidget(self.yoloEdit)
 
-        self.pushButton = QPushButton(self.widget)
+        self.pushButton = QPushButton(self.layoutWidget)
         self.pushButton.setObjectName(u"pushButton")
 
         self.horizontalLayout_7.addWidget(self.pushButton)
@@ -682,7 +692,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
