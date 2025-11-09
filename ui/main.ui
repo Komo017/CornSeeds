@@ -360,7 +360,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp1_2"/>
+              <widget class="QLineEdit" name="out1"/>
              </item>
             </layout>
            </item>
@@ -374,7 +374,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp2"/>
+              <widget class="QLineEdit" name="out2"/>
              </item>
             </layout>
            </item>
@@ -388,7 +388,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp3"/>
+              <widget class="QLineEdit" name="out3"/>
              </item>
             </layout>
            </item>
@@ -402,7 +402,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp4"/>
+              <widget class="QLineEdit" name="out4"/>
              </item>
             </layout>
            </item>
@@ -416,7 +416,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp5"/>
+              <widget class="QLineEdit" name="out5"/>
              </item>
             </layout>
            </item>
@@ -434,7 +434,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp6"/>
+              <widget class="QLineEdit" name="out6"/>
              </item>
             </layout>
            </item>
@@ -448,7 +448,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp7"/>
+              <widget class="QLineEdit" name="out7"/>
              </item>
             </layout>
            </item>
@@ -462,7 +462,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp8"/>
+              <widget class="QLineEdit" name="out8"/>
              </item>
             </layout>
            </item>
@@ -476,7 +476,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp9"/>
+              <widget class="QLineEdit" name="out9"/>
              </item>
             </layout>
            </item>
@@ -490,7 +490,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp10"/>
+              <widget class="QLineEdit" name="out10"/>
              </item>
             </layout>
            </item>
@@ -520,7 +520,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp1_3"/>
+              <widget class="QLineEdit" name="in1"/>
              </item>
             </layout>
            </item>
@@ -534,7 +534,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp2_2"/>
+              <widget class="QLineEdit" name="in2"/>
              </item>
             </layout>
            </item>
@@ -548,7 +548,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp3_2"/>
+              <widget class="QLineEdit" name="in3"/>
              </item>
             </layout>
            </item>
@@ -562,7 +562,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp4_2"/>
+              <widget class="QLineEdit" name="in4"/>
              </item>
             </layout>
            </item>
@@ -576,7 +576,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp5_2"/>
+              <widget class="QLineEdit" name="in5"/>
              </item>
             </layout>
            </item>
@@ -594,7 +594,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp6_2"/>
+              <widget class="QLineEdit" name="in6"/>
              </item>
             </layout>
            </item>
@@ -608,7 +608,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp7_2"/>
+              <widget class="QLineEdit" name="in7"/>
              </item>
             </layout>
            </item>
@@ -622,7 +622,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp8_2"/>
+              <widget class="QLineEdit" name="in8"/>
              </item>
             </layout>
            </item>
@@ -636,7 +636,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp9_2"/>
+              <widget class="QLineEdit" name="in9"/>
              </item>
             </layout>
            </item>
@@ -650,7 +650,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="tcp10_2"/>
+              <widget class="QLineEdit" name="in10"/>
              </item>
             </layout>
            </item>

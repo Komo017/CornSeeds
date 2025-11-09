@@ -43,9 +43,9 @@ class MainWindow(QMainWindow):
 
         # 设置默认IP和端口
         self.ui.IndIP.setText("192.168.0.10")
-        self.ui.IndPort.setText("2000")
+        self.ui.IndPort.setText("502")
         self.ui.PLCIP.setText("192.168.0.10")
-        self.ui.PLCPort.setText("2000")
+        self.ui.PLCPort.setText("502")
 
     def update_led_status(self, led_label, is_connected):
         """更新LED状态"""
@@ -220,8 +220,8 @@ class MainWindow(QMainWindow):
             # 获取TCP1-TCP10数据
             write_data = []
             inputs = [
-                self.ui.tcp1_2, self.ui.tcp2, self.ui.tcp3, self.ui.tcp4, self.ui.tcp5,
-                self.ui.tcp6, self.ui.tcp7, self.ui.tcp8, self.ui.tcp9, self.ui.lineEdit_10
+                self.ui.out1, self.ui.out2, self.ui.out3, self.ui.out4, self.ui.out5,
+                self.ui.out6, self.ui.out7, self.ui.out8, self.ui.out9, self.ui.out10
             ]
 
             for input_field in inputs:
@@ -240,11 +240,10 @@ class MainWindow(QMainWindow):
             if success:
                 self.ui.PLCCon.setText("连接成功")
                 self.update_led_status(self.ui.led2, True)
-                # 启动监控
+
+                self._update_in_display(result[10:20])
                 self.plc_tcp_client.start_monitoring(self.on_plc_data_received)
-                # 显示初始数据
-                if len(result) >= 20:
-                    self.ui.PLCLog.setPlainText(f"数据: {result[10:20]}")
+                self._setup_out_inputs_listeners()
             else:
                 self.ui.PLCCon.setText("连接断开")
                 self.update_led_status(self.ui.led2, False)
@@ -253,21 +252,106 @@ class MainWindow(QMainWindow):
             self.ui.PLCCon.setText("连接错误")
             self.update_led_status(self.ui.led2, False)
 
+    def _setup_out_inputs_listeners(self):
+        """为OUT1-10输入框设置文本改变监听"""
+        out_inputs = [
+            self.ui.out1, self.ui.out2, self.ui.out3, self.ui.out4, self.ui.out5,
+            self.ui.out6, self.ui.out7, self.ui.out8, self.ui.out9, self.ui.out10
+        ]
+
+        for input_field in out_inputs:
+            try:
+                # 使用try-except避免没有连接时的错误
+                input_field.textChanged.disconnect()
+            except (RuntimeError, TypeError):
+                # 如果没有连接或参数不匹配，忽略错误
+                pass
+            # 连接文本改变信号
+            input_field.textChanged.connect(self._on_out_input_changed)
+
+    def _on_out_input_changed(self):
+        """当OUT1-10任何输入框内容改变时触发"""
+        if hasattr(self, 'plc_tcp_client') and self.plc_tcp_client.is_connected:
+            # 延迟执行，避免频繁发送
+            QTimer.singleShot(500, self._send_updated_out_data)
+
+    def _send_updated_out_data(self):
+        """发送更新后的OUT数据到PLC"""
+        try:
+            if not hasattr(self, 'plc_tcp_client') or not self.plc_tcp_client.is_connected:
+                return
+
+            # 获取当前的OUT1-OUT10数据
+            write_data = []
+            out_inputs = [
+                self.ui.out1, self.ui.out2, self.ui.out3, self.ui.out4, self.ui.out5,
+                self.ui.out6, self.ui.out7, self.ui.out8, self.ui.out9, self.ui.out10
+            ]
+
+            for input_field in out_inputs:
+                text = input_field.text().strip()
+                if text:
+                    try:
+                        write_data.append(int(text))
+                    except:
+                        write_data.append(0)
+                else:
+                    write_data.append(0)
+
+            print(f"实时发送数据: {write_data}")
+
+            ip = self.ui.PLCIP.text().strip()
+            port = int(self.ui.PLCPort.text().strip())
+
+            # 发送数据到PLC
+            success, result = self.plc_tcp_client.connect_and_communicate(ip, port, write_data)
+            if success:
+                # 更新IN1-IN10显示
+                self._update_in_display(result[10:20])
+            else:
+                print(f"实时发送失败: {result}")
+
+        except Exception as e:
+            print(f"实时发送错误: {e}")
+
     def on_plc_data_received(self, data):
         """PLC数据接收回调 """
         try:
-            # 使用QTimer确保在主线中执行UI操作
-            QTimer.singleShot(0, lambda: self._update_plc_display(data))
+            print(f"接收到PLC数据: {data}")
+            if len(data) >= 20:
+                # 提取后10个数据（索引10-19）
+                last_10_data = data[10:20]
+                print(f"提取后10位数据: {last_10_data}")
+                # 使用QTimer确保在主线中执行UI操作
+                # QTimer.singleShot(0, lambda: self._update_plc_display(last_10_data))
+                self._update_plc_display(last_10_data)
+            else:
+                print(f"数据长度不足20: {len(data)}")
         except Exception as e:
             print(f"数据接收回调错误: {e}")
 
     def _update_plc_display(self, data):
         """在主线程中更新UI"""
         try:
-            if len(data) >= 20:
-                self.ui.PLCLog.setPlainText(f"接收数据: {data}")
+            self._update_in_display(data)
         except Exception as e:
             print(f"更新显示错误: {e}")
+
+    def _update_in_display(self, in_data):
+        """更新IN1-IN10显示"""
+        try:
+            in_inputs = [
+                self.ui.in1, self.ui.in2, self.ui.in3, self.ui.in4, self.ui.in5,
+                self.ui.in6, self.ui.in7, self.ui.in8, self.ui.in9, self.ui.in10
+            ]
+
+            for i, input_field in enumerate(in_inputs):
+                if i < len(in_data):
+                    # 设置文本但不允许用户编辑
+                    input_field.setText(str(in_data[i]))
+                    input_field.setReadOnly(True)  # 设置为只读，用户无法修改
+        except Exception as e:
+            print(f"更新IN显示错误: {e}")
 
     def closeEvent(self, event):
         """关闭事件处理"""
