@@ -44,7 +44,7 @@ class MainWindow(QMainWindow):
         # 设置默认IP和端口
         self.ui.IndIP.setText("192.168.0.10")
         self.ui.IndPort.setText("2000")
-        self.ui.PLCIP.setText("192.168.0.11")
+        self.ui.PLCIP.setText("192.168.0.10")
         self.ui.PLCPort.setText("2000")
 
     def update_led_status(self, led_label, is_connected):
@@ -91,6 +91,10 @@ class MainWindow(QMainWindow):
             self.ui.pushButton.clicked.connect(self.start_yolo_detection)
             self.ui.F2.clicked.connect(lambda: self.on_feature_button_clicked(self.ui.F2, "F2功能"))
             self.ui.F3.clicked.connect(lambda: self.on_feature_button_clicked(self.ui.F3, "F3功能"))
+
+            # 通讯页面按钮
+            self.ui.IndCon.clicked.connect(self.connect_industrial_tcp)  # 添加这行
+            self.ui.InfoCon2.clicked.connect(self.connect_plc_tcp)  # 添加这行
 
             # 底部控制按钮
             self.ui.Start.clicked.connect(lambda: self.show_not_implemented("启动功能"))
@@ -171,135 +175,106 @@ class MainWindow(QMainWindow):
 
     def switch_to_connect_page(self):
         """切换到通讯页面"""
-        # 更新按钮颜色
         self.update_button_color(self.ui.connect)
-        # 切换到connectPage页面
         self.ui.stackedWidget.setCurrentIndex(1)
-        print("切换到通讯页面")
-
-        # 初始化TCP客户端
         self.init_tcp_clients()
 
     def init_tcp_clients(self):
         """初始化TCP客户端"""
-        from modules.tcp_client import TCPClient
-
-        # 创建工业相机TCP客户端
-        self.ind_tcp_client = TCPClient()
-        # 创建PLC TCP客户端
-        self.plc_tcp_client = TCPClient()
-
-        # 设置PLC数据接收回调
-        self.plc_tcp_client.set_receive_callback(self.on_plc_data_received)
-
-        # 连接按钮信号
-        self.ui.IndCon.clicked.connect(self.connect_industrial_tcp)
-        self.ui.InfoCon2.clicked.connect(self.connect_plc_tcp)
+        try:
+            from modules.tcp_client import ModbusClientHandler
+            # 创建工业相机Modbus客户端
+            self.ind_tcp_client = ModbusClientHandler()
+            # 创建PLC Modbus客户端
+            self.plc_tcp_client = ModbusClientHandler()
+        except ImportError as e:
+            print(f"TCP客户端模块导入失败: {e}")
 
     def connect_industrial_tcp(self):
         """连接工业相机TCP"""
         try:
-            # 获取IP和端口
             ip = self.ui.IndIP.text().strip()
-            port_text = self.ui.IndPort.text().strip()
+            port = int(self.ui.IndPort.text().strip())
 
-            if not ip or not port_text:
-                QMessageBox.warning(self, "输入错误", "请输入IP地址和端口号")
-                return
-
-            try:
-                port = int(port_text)
-            except ValueError:
-                QMessageBox.warning(self, "输入错误", "端口号必须是数字")
-                return
-
-            # 连接设备
-            success, message = self.ind_tcp_client.connect_to_server(ip, port)
-
-            # 更新UI状态
-            self.ui.InfoCon1.setText(message)
-            self.update_led_status(self.ui.led1, success)
+            # 工业相机发送10个0
+            write_data = [0] * 10
+            success, result = self.ind_tcp_client.connect_and_communicate(ip, port, write_data)
 
             if success:
-                QMessageBox.information(self, "连接成功", "工业相机TCP连接成功！")
-                QTimer.singleShot(1000,
-                                  lambda: QMessageBox.information(self, "连接状态", "工业相机连接成功但是暂时没有数据"))
+                self.ui.InfoCon1.setText("连接成功")
+                self.update_led_status(self.ui.led1, True)
             else:
-                QMessageBox.warning(self, "连接失败", f"工业相机TCP连接失败: {message}")
+                self.ui.InfoCon1.setText("连接断开")
+                self.update_led_status(self.ui.led1, False)
 
         except Exception as e:
-            error_msg = f"连接过程中发生错误: {str(e)}"
             self.ui.InfoCon1.setText("连接错误")
             self.update_led_status(self.ui.led1, False)
-            QMessageBox.critical(self, "错误", error_msg)
 
     def connect_plc_tcp(self):
         """连接PLC TCP"""
         try:
-            # 获取IP和端口
             ip = self.ui.PLCIP.text().strip()
-            port_text = self.ui.PLCPort.text().strip()
+            port = int(self.ui.PLCPort.text().strip())
 
-            if not ip or not port_text:
-                QMessageBox.warning(self, "输入错误", "请输入IP地址和端口号")
-                return
+            # 获取TCP1-TCP10数据
+            write_data = []
+            inputs = [
+                self.ui.tcp1_2, self.ui.tcp2, self.ui.tcp3, self.ui.tcp4, self.ui.tcp5,
+                self.ui.tcp6, self.ui.tcp7, self.ui.tcp8, self.ui.tcp9, self.ui.lineEdit_10
+            ]
 
-            try:
-                port = int(port_text)
-            except ValueError:
-                QMessageBox.warning(self, "输入错误", "端口号必须是数字")
-                return
+            for input_field in inputs:
+                text = input_field.text().strip()
+                if text:
+                    try:
+                        write_data.append(int(text))
+                    except:
+                        write_data.append(0)
+                else:
+                    write_data.append(0)
 
-            # 连接设备
-            success, message = self.plc_tcp_client.connect_to_server(ip, port)
-
-            # 更新UI状态
-            self.ui.PLCCon.setText(message)
-            self.update_led_status(self.ui.led2, success)
+            # 连接并通信
+            success, result = self.plc_tcp_client.connect_and_communicate(ip, port, write_data)
 
             if success:
-                QMessageBox.information(self, "连接成功", "PLC TCP连接成功！")
-                QTimer.singleShot(1000,
-                                  lambda: QMessageBox.information(self, "连接状态", "PLC连接成功但是暂时没有数据"))
+                self.ui.PLCCon.setText("连接成功")
+                self.update_led_status(self.ui.led2, True)
+                # 启动监控
+                self.plc_tcp_client.start_monitoring(self.on_plc_data_received)
+                # 显示初始数据
+                if len(result) >= 20:
+                    self.ui.PLCLog.setPlainText(f"数据: {result[10:20]}")
             else:
-                QMessageBox.warning(self, "连接失败", f"PLC TCP连接失败: {message}")
+                self.ui.PLCCon.setText("连接断开")
+                self.update_led_status(self.ui.led2, False)
 
         except Exception as e:
-            error_msg = f"连接过程中发生错误: {str(e)}"
             self.ui.PLCCon.setText("连接错误")
             self.update_led_status(self.ui.led2, False)
-            QMessageBox.critical(self, "错误", error_msg)
 
     def on_plc_data_received(self, data):
-        """PLC数据接收回调"""
+        """PLC数据接收回调 """
         try:
-            # 在PLCLog中显示接收到的数据
-            if hasattr(self.ui, 'PLCLog'):
-                # 将数据转换为字符串显示
-                data_str = f"接收到数据: {data}"
-                self.ui.PLCLog.appendPlainText(data_str)
-
-                # 自动滚动到底部
-                scrollbar = self.ui.PLCLog.verticalScrollBar()
-                scrollbar.setValue(scrollbar.maximum())
+            # 使用QTimer确保在主线中执行UI操作
+            QTimer.singleShot(0, lambda: self._update_plc_display(data))
         except Exception as e:
-            print(f"更新PLC日志错误: {e}")
+            print(f"数据接收回调错误: {e}")
+
+    def _update_plc_display(self, data):
+        """在主线程中更新UI"""
+        try:
+            if len(data) >= 20:
+                self.ui.PLCLog.setPlainText(f"接收数据: {data}")
+        except Exception as e:
+            print(f"更新显示错误: {e}")
 
     def closeEvent(self, event):
         """关闭事件处理"""
-        try:
-            # 断开TCP连接
-            if hasattr(self, 'ind_tcp_client'):
-                self.ind_tcp_client.disconnect()
-            if hasattr(self, 'plc_tcp_client'):
-                self.plc_tcp_client.disconnect()
-
-            # 关闭工业相机窗口
-            if self.industrial_window is not None:
-                self.industrial_window.close()
-        except Exception as e:
-            print(f"清理过程中出现错误: {e}")
-
+        if hasattr(self, 'ind_tcp_client'):
+            self.ind_tcp_client.disconnect()
+        if hasattr(self, 'plc_tcp_client'):
+            self.plc_tcp_client.disconnect()
         event.accept()
 
     ###################################################################################################################

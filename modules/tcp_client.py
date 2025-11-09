@@ -1,81 +1,157 @@
+# # modules/tcp_client.py
+# from pymodbus.client import ModbusTcpClient as ModbusClient
+# import threading
+# import time
+#
+#
+# class ModbusClientHandler:
+#     def __init__(self):
+#         self.client = None
+#         self.is_connected = False
+#         self.monitoring = False
+#
+#     def connect_and_communicate(self, ip, port, write_data):
+#         """连接并通信"""
+#         try:
+#             self.disconnect()
+#             self.client = ModbusClient(host=ip, port=port)
+#
+#             if not self.client.connect():
+#                 return False, "连接失败"
+#
+#             # 写入10个寄存器
+#             write_result = self.client.write_registers(0, write_data[:10], slave=1)
+#             if write_result.isError():
+#                 return False, "写入失败"
+#
+#             # 读取20个寄存器
+#             read_result = self.client.read_holding_registers(0, 20, slave=1)
+#             if read_result.isError():
+#                 return False, "读取失败"
+#
+#             self.is_connected = True
+#             return True, read_result.registers
+#
+#         except Exception as e:
+#             return False, str(e)
+#
+#     def start_monitoring(self, callback):
+#         """启动监控"""
+#
+#         def monitor():
+#             while self.monitoring and self.is_connected:
+#                 try:
+#                     result = self.client.read_holding_registers(0, 20, slave=1)
+#                     if not result.isError():
+#                         callback(result.registers)
+#                     time.sleep(1)
+#                 except:
+#                     time.sleep(2)
+#
+#         self.monitoring = True
+#         threading.Thread(target=monitor, daemon=True).start()
+#
+#     def disconnect(self):
+#         self.monitoring = False
+#         self.is_connected = False
+#         if self.client:
+#             self.client.close()
+
 # modules/tcp_client.py
-import socket
+from pymodbus.client import ModbusTcpClient as ModbusClient
 import threading
+import time
 
 
-class TCPClient:
-    """TCP客户端通讯模块"""
-
+class ModbusClientHandler:
     def __init__(self):
-        self.tcp_client_socket = None
+        self.client = None
         self.is_connected = False
-        self.receive_thread = None
-        self.should_receive = False
-        self.receive_callback = None
+        self.monitoring = False
+        self._stop_event = threading.Event()
 
-    def connect_to_server(self, ip, port, timeout=5):
-        """连接到TCP服务器"""
+    def connect_and_communicate(self, ip, port, write_data):
+        """连接并通信"""
         try:
-            self.tcp_client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.tcp_client_socket.settimeout(timeout)
-            self.tcp_client_socket.connect((ip, port))
+            self.disconnect()
+            self.client = ModbusClient(host=ip, port=port)
+
+            print(f"尝试连接到 {ip}:{port}")
+            if not self.client.connect():
+                return False, "连接失败"
+            print("Modbus连接成功")
+
+            # 确保有10个数据
+            if len(write_data) < 10:
+                write_data = write_data + [0] * (10 - len(write_data))
+
+            print(f"准备写入数据: {write_data}")
+            write_result = self.client.write_registers(
+                address=0,
+                values=write_data[:10],
+                slave=1
+            )
+            if write_result.isError():
+                print(f"写入失败: {write_result}")
+                return False, "写入失败"
+            print("数据写入成功")
+
+            print("开始读取20个寄存器...")
+            read_result = self.client.read_holding_registers(
+                address=0,
+                count=20,
+                slave=1
+            )
+            if read_result.isError():
+                print(f"读取失败: {read_result}")
+                return False, "读取失败"
+
+            print(f"成功读取数据: {read_result.registers}")
             self.is_connected = True
+            return True, read_result.registers
 
-            # 启动接收线程
-            self.should_receive = True
-            self.receive_thread = threading.Thread(target=self._receive_data)
-            self.receive_thread.daemon = True
-            self.receive_thread.start()
-
-            return True, "连接成功"
-
-        except socket.timeout:
-            return False, "连接超时"
-        except ConnectionRefusedError:
-            return False, "连接被拒绝"
         except Exception as e:
-            return False, f"连接错误: {str(e)}"
+            print(f"通信异常: {e}")
+            return False, f"通信错误: {str(e)}"
 
-    def _receive_data(self):
-        """接收数据的线程函数"""
-        while self.should_receive and self.is_connected:
-            try:
-                recv_data = self.tcp_client_socket.recv(1024)
-                if recv_data:
-                    # 将字节数据转换为列表显示
-                    res_data = list(recv_data)
-                    if self.receive_callback:
-                        self.receive_callback(res_data)
-                else:
-                    self.is_connected = False
-                    break
-            except Exception:
-                if self.should_receive:
-                    self.is_connected = False
-                break
+    def start_monitoring(self, callback):
+        """启动监控"""
+        self._stop_event.clear()
 
-    def send_data(self, data):
-        """发送数据"""
-        if self.is_connected and self.tcp_client_socket:
-            try:
-                self.tcp_client_socket.send(data)
-                return True
-            except Exception:
-                self.is_connected = False
-                return False
-        return False
+        def monitor():
+            while not self._stop_event.is_set() and self.is_connected:
+                try:
+                    if not self.client or not self.is_connected:
+                        break
+
+                    result = self.client.read_holding_registers(
+                        address=0,
+                        count=20,
+                        slave=1
+                    )
+                    if not result.isError():
+                        # 使用线程安全的回调
+                        try:
+                            callback(result.registers)
+                        except Exception as e:
+                            print(f"回调执行错误: {e}")
+                    time.sleep(1)
+                except Exception as e:
+                    print(f"监控异常: {e}")
+                    time.sleep(2)
+
+        self.monitoring = True
+        threading.Thread(target=monitor, daemon=True).start()
 
     def disconnect(self):
-        """断开连接"""
-        self.should_receive = False
+        """安全断开连接"""
+        self.monitoring = False
         self.is_connected = False
-        if self.tcp_client_socket:
+        self._stop_event.set()
+
+        if self.client:
             try:
-                self.tcp_client_socket.close()
+                self.client.close()
             except:
                 pass
-            self.tcp_client_socket = None
-
-    def set_receive_callback(self, callback):
-        """设置数据接收回调函数"""
-        self.receive_callback = callback
+            self.client = None

@@ -1,7 +1,7 @@
 # # -*- coding: utf-8 -*-
 #
 # ################################################################################
-# ## Form generated from reading UI file 'maindwAOvm.ui'
+# ## Form generated from reading UI file 'mainToqaaZ.ui'
 # ##
 # ## Created by: Qt User Interface Compiler version 6.10.0
 # ##
@@ -240,33 +240,36 @@
 #         __qtablewidgetitem9 = QTableWidgetItem()
 #         self.tableWidget.setVerticalHeaderItem(4, __qtablewidgetitem9)
 #         self.tableWidget.setObjectName(u"tableWidget")
-#         self.tableWidget.setGeometry(QRect(10, 20, 681, 191))
+#         self.tableWidget.setGeometry(QRect(10, 100, 681, 111))
 #         self.tableWidget.horizontalHeader().setVisible(True)
 #         self.tableWidget.horizontalHeader().setCascadingSectionResizes(False)
 #         self.tableWidget.horizontalHeader().setDefaultSectionSize(134)
 #         self.tableWidget.verticalHeader().setVisible(True)
+#         self.PLCLog = QPlainTextEdit(self.monitorPara)
+#         self.PLCLog.setObjectName(u"PLCLog")
+#         self.PLCLog.setGeometry(QRect(10, 20, 681, 81))
 #         self.stackedWidget.addWidget(self.connectPage)
 #         self.yoloPage = QWidget()
 #         self.yoloPage.setObjectName(u"yoloPage")
-#         self.widget = QWidget(self.yoloPage)
-#         self.widget.setObjectName(u"widget")
-#         self.widget.setGeometry(QRect(10, 0, 671, 411))
-#         self.verticalLayout_4 = QVBoxLayout(self.widget)
+#         self.layoutWidget = QWidget(self.yoloPage)
+#         self.layoutWidget.setObjectName(u"layoutWidget")
+#         self.layoutWidget.setGeometry(QRect(10, 0, 671, 411))
+#         self.verticalLayout_4 = QVBoxLayout(self.layoutWidget)
 #         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
 #         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
-#         self.yoloLog = QPlainTextEdit(self.widget)
+#         self.yoloLog = QPlainTextEdit(self.layoutWidget)
 #         self.yoloLog.setObjectName(u"yoloLog")
 #
 #         self.verticalLayout_4.addWidget(self.yoloLog)
 #
 #         self.horizontalLayout_7 = QHBoxLayout()
 #         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-#         self.yoloEdit = QLineEdit(self.widget)
+#         self.yoloEdit = QLineEdit(self.layoutWidget)
 #         self.yoloEdit.setObjectName(u"yoloEdit")
 #
 #         self.horizontalLayout_7.addWidget(self.yoloEdit)
 #
-#         self.pushButton = QPushButton(self.widget)
+#         self.pushButton = QPushButton(self.layoutWidget)
 #         self.pushButton.setObjectName(u"pushButton")
 #
 #         self.horizontalLayout_7.addWidget(self.pushButton)
@@ -315,7 +318,7 @@
 #
 #         self.retranslateUi(MainWindow)
 #
-#         self.stackedWidget.setCurrentIndex(2)
+#         self.stackedWidget.setCurrentIndex(1)
 #
 #
 #         QMetaObject.connectSlotsByName(MainWindow)
@@ -371,11 +374,10 @@
 #     # retranslateUi
 #
 
-
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'mainToqaaZ.ui'
+## Form generated from reading UI file 'mainDSuhvA.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.10.0
 ##
@@ -389,10 +391,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout, QHeaderView,
-    QLabel, QLineEdit, QMainWindow, QPlainTextEdit,
-    QPushButton, QSizePolicy, QStackedWidget, QStatusBar,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QGroupBox, QHBoxLayout, QLabel,
+    QLineEdit, QMainWindow, QPlainTextEdit, QPushButton,
+    QSizePolicy, QStackedWidget, QStatusBar, QVBoxLayout,
+    QWidget)
 #import icons_rc
 
 class Ui_MainWindow(object):
@@ -588,62 +590,197 @@ class Ui_MainWindow(object):
         self.monitorPara = QGroupBox(self.connectPage)
         self.monitorPara.setObjectName(u"monitorPara")
         self.monitorPara.setGeometry(QRect(0, 220, 721, 201))
-        self.tableWidget = QTableWidget(self.monitorPara)
-        if (self.tableWidget.columnCount() < 5):
-            self.tableWidget.setColumnCount(5)
-        __qtablewidgetitem = QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(0, __qtablewidgetitem)
-        __qtablewidgetitem1 = QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(1, __qtablewidgetitem1)
-        __qtablewidgetitem2 = QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(2, __qtablewidgetitem2)
-        __qtablewidgetitem3 = QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(3, __qtablewidgetitem3)
-        __qtablewidgetitem4 = QTableWidgetItem()
-        self.tableWidget.setHorizontalHeaderItem(4, __qtablewidgetitem4)
-        if (self.tableWidget.rowCount() < 5):
-            self.tableWidget.setRowCount(5)
-        __qtablewidgetitem5 = QTableWidgetItem()
-        self.tableWidget.setVerticalHeaderItem(0, __qtablewidgetitem5)
-        __qtablewidgetitem6 = QTableWidgetItem()
-        self.tableWidget.setVerticalHeaderItem(1, __qtablewidgetitem6)
-        __qtablewidgetitem7 = QTableWidgetItem()
-        self.tableWidget.setVerticalHeaderItem(2, __qtablewidgetitem7)
-        __qtablewidgetitem8 = QTableWidgetItem()
-        self.tableWidget.setVerticalHeaderItem(3, __qtablewidgetitem8)
-        __qtablewidgetitem9 = QTableWidgetItem()
-        self.tableWidget.setVerticalHeaderItem(4, __qtablewidgetitem9)
-        self.tableWidget.setObjectName(u"tableWidget")
-        self.tableWidget.setGeometry(QRect(10, 100, 681, 111))
-        self.tableWidget.horizontalHeader().setVisible(True)
-        self.tableWidget.horizontalHeader().setCascadingSectionResizes(False)
-        self.tableWidget.horizontalHeader().setDefaultSectionSize(134)
-        self.tableWidget.verticalHeader().setVisible(True)
         self.PLCLog = QPlainTextEdit(self.monitorPara)
         self.PLCLog.setObjectName(u"PLCLog")
-        self.PLCLog.setGeometry(QRect(10, 20, 681, 81))
+        self.PLCLog.setGeometry(QRect(0, 110, 711, 91))
+        self.layoutWidget = QWidget(self.monitorPara)
+        self.layoutWidget.setObjectName(u"layoutWidget")
+        self.layoutWidget.setGeometry(QRect(0, 10, 711, 91))
+        self.verticalLayout_5 = QVBoxLayout(self.layoutWidget)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_13 = QHBoxLayout()
+        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
+        self.horizontalLayout_8 = QHBoxLayout()
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.label = QLabel(self.layoutWidget)
+        self.label.setObjectName(u"label")
+
+        self.horizontalLayout_8.addWidget(self.label)
+
+        self.tcp1_2 = QLineEdit(self.layoutWidget)
+        self.tcp1_2.setObjectName(u"tcp1_2")
+
+        self.horizontalLayout_8.addWidget(self.tcp1_2)
+
+
+        self.horizontalLayout_13.addLayout(self.horizontalLayout_8)
+
+        self.horizontalLayout_9 = QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.label_4 = QLabel(self.layoutWidget)
+        self.label_4.setObjectName(u"label_4")
+
+        self.horizontalLayout_9.addWidget(self.label_4)
+
+        self.tcp2 = QLineEdit(self.layoutWidget)
+        self.tcp2.setObjectName(u"tcp2")
+
+        self.horizontalLayout_9.addWidget(self.tcp2)
+
+
+        self.horizontalLayout_13.addLayout(self.horizontalLayout_9)
+
+        self.horizontalLayout_10 = QHBoxLayout()
+        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
+        self.label_7 = QLabel(self.layoutWidget)
+        self.label_7.setObjectName(u"label_7")
+
+        self.horizontalLayout_10.addWidget(self.label_7)
+
+        self.tcp3 = QLineEdit(self.layoutWidget)
+        self.tcp3.setObjectName(u"tcp3")
+
+        self.horizontalLayout_10.addWidget(self.tcp3)
+
+
+        self.horizontalLayout_13.addLayout(self.horizontalLayout_10)
+
+        self.horizontalLayout_11 = QHBoxLayout()
+        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.label_8 = QLabel(self.layoutWidget)
+        self.label_8.setObjectName(u"label_8")
+
+        self.horizontalLayout_11.addWidget(self.label_8)
+
+        self.tcp4 = QLineEdit(self.layoutWidget)
+        self.tcp4.setObjectName(u"tcp4")
+
+        self.horizontalLayout_11.addWidget(self.tcp4)
+
+
+        self.horizontalLayout_13.addLayout(self.horizontalLayout_11)
+
+        self.horizontalLayout_12 = QHBoxLayout()
+        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
+        self.label_9 = QLabel(self.layoutWidget)
+        self.label_9.setObjectName(u"label_9")
+
+        self.horizontalLayout_12.addWidget(self.label_9)
+
+        self.tcp5 = QLineEdit(self.layoutWidget)
+        self.tcp5.setObjectName(u"tcp5")
+
+        self.horizontalLayout_12.addWidget(self.tcp5)
+
+
+        self.horizontalLayout_13.addLayout(self.horizontalLayout_12)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_13)
+
+        self.horizontalLayout_14 = QHBoxLayout()
+        self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
+        self.horizontalLayout_15 = QHBoxLayout()
+        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
+        self.label_10 = QLabel(self.layoutWidget)
+        self.label_10.setObjectName(u"label_10")
+
+        self.horizontalLayout_15.addWidget(self.label_10)
+
+        self.tcp6 = QLineEdit(self.layoutWidget)
+        self.tcp6.setObjectName(u"tcp6")
+
+        self.horizontalLayout_15.addWidget(self.tcp6)
+
+
+        self.horizontalLayout_14.addLayout(self.horizontalLayout_15)
+
+        self.horizontalLayout_16 = QHBoxLayout()
+        self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
+        self.label_11 = QLabel(self.layoutWidget)
+        self.label_11.setObjectName(u"label_11")
+
+        self.horizontalLayout_16.addWidget(self.label_11)
+
+        self.tcp7 = QLineEdit(self.layoutWidget)
+        self.tcp7.setObjectName(u"tcp7")
+
+        self.horizontalLayout_16.addWidget(self.tcp7)
+
+
+        self.horizontalLayout_14.addLayout(self.horizontalLayout_16)
+
+        self.horizontalLayout_17 = QHBoxLayout()
+        self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
+        self.label_12 = QLabel(self.layoutWidget)
+        self.label_12.setObjectName(u"label_12")
+
+        self.horizontalLayout_17.addWidget(self.label_12)
+
+        self.tcp8 = QLineEdit(self.layoutWidget)
+        self.tcp8.setObjectName(u"tcp8")
+
+        self.horizontalLayout_17.addWidget(self.tcp8)
+
+
+        self.horizontalLayout_14.addLayout(self.horizontalLayout_17)
+
+        self.horizontalLayout_18 = QHBoxLayout()
+        self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
+        self.label_13 = QLabel(self.layoutWidget)
+        self.label_13.setObjectName(u"label_13")
+
+        self.horizontalLayout_18.addWidget(self.label_13)
+
+        self.tcp9 = QLineEdit(self.layoutWidget)
+        self.tcp9.setObjectName(u"tcp9")
+
+        self.horizontalLayout_18.addWidget(self.tcp9)
+
+
+        self.horizontalLayout_14.addLayout(self.horizontalLayout_18)
+
+        self.horizontalLayout_19 = QHBoxLayout()
+        self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
+        self.label_14 = QLabel(self.layoutWidget)
+        self.label_14.setObjectName(u"label_14")
+
+        self.horizontalLayout_19.addWidget(self.label_14)
+
+        self.lineEdit_10 = QLineEdit(self.layoutWidget)
+        self.lineEdit_10.setObjectName(u"lineEdit_10")
+
+        self.horizontalLayout_19.addWidget(self.lineEdit_10)
+
+
+        self.horizontalLayout_14.addLayout(self.horizontalLayout_19)
+
+
+        self.verticalLayout_5.addLayout(self.horizontalLayout_14)
+
         self.stackedWidget.addWidget(self.connectPage)
         self.yoloPage = QWidget()
         self.yoloPage.setObjectName(u"yoloPage")
-        self.layoutWidget = QWidget(self.yoloPage)
-        self.layoutWidget.setObjectName(u"layoutWidget")
-        self.layoutWidget.setGeometry(QRect(10, 0, 671, 411))
-        self.verticalLayout_4 = QVBoxLayout(self.layoutWidget)
+        self.layoutWidget1 = QWidget(self.yoloPage)
+        self.layoutWidget1.setObjectName(u"layoutWidget1")
+        self.layoutWidget1.setGeometry(QRect(10, 0, 671, 411))
+        self.verticalLayout_4 = QVBoxLayout(self.layoutWidget1)
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
         self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
-        self.yoloLog = QPlainTextEdit(self.layoutWidget)
+        self.yoloLog = QPlainTextEdit(self.layoutWidget1)
         self.yoloLog.setObjectName(u"yoloLog")
 
         self.verticalLayout_4.addWidget(self.yoloLog)
 
         self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.yoloEdit = QLineEdit(self.layoutWidget)
+        self.yoloEdit = QLineEdit(self.layoutWidget1)
         self.yoloEdit.setObjectName(u"yoloEdit")
 
         self.horizontalLayout_7.addWidget(self.yoloEdit)
 
-        self.pushButton = QPushButton(self.layoutWidget)
+        self.pushButton = QPushButton(self.layoutWidget1)
         self.pushButton.setObjectName(u"pushButton")
 
         self.horizontalLayout_7.addWidget(self.pushButton)
@@ -723,17 +860,17 @@ class Ui_MainWindow(object):
         self.led2.setText(QCoreApplication.translate("MainWindow", u"Led", None))
         self.PLCCon.setText(QCoreApplication.translate("MainWindow", u"\u8fde\u63a5\u65ad\u5f00", None))
         self.InfoCon2.setText(QCoreApplication.translate("MainWindow", u"\u8fde\u63a5", None))
-        self.monitorPara.setTitle(QCoreApplication.translate("MainWindow", u"PLC\u76d1\u63a7", None))
-        ___qtablewidgetitem = self.tableWidget.horizontalHeaderItem(0)
-        ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"\u5e8f\u53f7", None));
-        ___qtablewidgetitem1 = self.tableWidget.horizontalHeaderItem(1)
-        ___qtablewidgetitem1.setText(QCoreApplication.translate("MainWindow", u"\u65f6\u95f4", None));
-        ___qtablewidgetitem2 = self.tableWidget.horizontalHeaderItem(2)
-        ___qtablewidgetitem2.setText(QCoreApplication.translate("MainWindow", u"\u5730\u5740", None));
-        ___qtablewidgetitem3 = self.tableWidget.horizontalHeaderItem(3)
-        ___qtablewidgetitem3.setText(QCoreApplication.translate("MainWindow", u"\u64cd\u4f5c", None));
-        ___qtablewidgetitem4 = self.tableWidget.horizontalHeaderItem(4)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"\u503c", None));
+        self.monitorPara.setTitle(QCoreApplication.translate("MainWindow", u"PLC\u901a\u8baf\u90e8\u5206", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"TCP1", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"TCP2", None))
+        self.label_7.setText(QCoreApplication.translate("MainWindow", u"TCP3", None))
+        self.label_8.setText(QCoreApplication.translate("MainWindow", u"TCP4", None))
+        self.label_9.setText(QCoreApplication.translate("MainWindow", u"TCP5", None))
+        self.label_10.setText(QCoreApplication.translate("MainWindow", u"TCP6", None))
+        self.label_11.setText(QCoreApplication.translate("MainWindow", u"TCP7", None))
+        self.label_12.setText(QCoreApplication.translate("MainWindow", u"TCP1", None))
+        self.label_13.setText(QCoreApplication.translate("MainWindow", u"TCP1", None))
+        self.label_14.setText(QCoreApplication.translate("MainWindow", u"TCP1", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u68c0\u6d4b", None))
         self.bottomGroup.setTitle("")
         self.home.setText("")
