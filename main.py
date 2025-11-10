@@ -275,6 +275,45 @@ class MainWindow(QMainWindow):
             # 延迟执行，避免频繁发送
             QTimer.singleShot(500, self._send_updated_out_data)
 
+    # def _send_updated_out_data(self):
+    #     """发送更新后的OUT数据到PLC"""
+    #     try:
+    #         if not hasattr(self, 'plc_tcp_client') or not self.plc_tcp_client.is_connected:
+    #             return
+    #
+    #         # 获取当前的OUT1-OUT10数据
+    #         write_data = []
+    #         out_inputs = [
+    #             self.ui.out1, self.ui.out2, self.ui.out3, self.ui.out4, self.ui.out5,
+    #             self.ui.out6, self.ui.out7, self.ui.out8, self.ui.out9, self.ui.out10
+    #         ]
+    #
+    #         for input_field in out_inputs:
+    #             text = input_field.text().strip()
+    #             if text:
+    #                 try:
+    #                     write_data.append(int(text))
+    #                 except:
+    #                     write_data.append(0)
+    #             else:
+    #                 write_data.append(0)
+    #
+    #         print(f"实时发送数据: {write_data}")
+    #
+    #         ip = self.ui.PLCIP.text().strip()
+    #         port = int(self.ui.PLCPort.text().strip())
+    #
+    #         # 发送数据到PLC
+    #         success, result = self.plc_tcp_client.connect_and_communicate(ip, port, write_data)
+    #         if success:
+    #             # 更新IN1-IN10显示
+    #             self._update_in_display(result[10:20])
+    #         else:
+    #             print(f"实时发送失败: {result}")
+    #
+    #     except Exception as e:
+    #         print(f"实时发送错误: {e}")
+
     def _send_updated_out_data(self):
         """发送更新后的OUT数据到PLC"""
         try:
@@ -300,14 +339,12 @@ class MainWindow(QMainWindow):
 
             print(f"实时发送数据: {write_data}")
 
-            ip = self.ui.PLCIP.text().strip()
-            port = int(self.ui.PLCPort.text().strip())
-
-            # 发送数据到PLC
-            success, result = self.plc_tcp_client.connect_and_communicate(ip, port, write_data)
+            # === 修改：使用新的 write_data_only 方法，不重新连接 ===
+            success, result = self.plc_tcp_client.write_data_only(write_data)
             if success:
                 # 更新IN1-IN10显示
                 self._update_in_display(result[10:20])
+                print("实时发送成功，连接保持")
             else:
                 print(f"实时发送失败: {result}")
 
