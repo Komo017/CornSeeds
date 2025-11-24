@@ -281,14 +281,14 @@
          <item>
           <widget class="QLabel" name="resultshow1">
            <property name="text">
-            <string>TextLabel</string>
+            <string/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLabel" name="resultshow3">
            <property name="text">
-            <string>TextLabel</string>
+            <string/>
            </property>
           </widget>
          </item>
@@ -299,14 +299,14 @@
          <item>
           <widget class="QLabel" name="resultshow2">
            <property name="text">
-            <string>TextLabel</string>
+            <string/>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QLabel" name="resultshow4">
            <property name="text">
-            <string>TextLabel</string>
+            <string/>
            </property>
           </widget>
          </item>

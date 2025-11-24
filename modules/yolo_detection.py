@@ -1,9 +1,7 @@
 # coding:utf-8
 import os
-import cv2
-from ultralytics import YOLO
 from PySide6.QtCore import QThread, Signal
-import datetime
+from modules.yolo_processor import YOLOProcessor
 
 
 class YOLODetection(QThread):
@@ -17,6 +15,7 @@ class YOLODetection(QThread):
         super().__init__()
         self.folder_path = folder_path
         self.model_path = model_path
+        self.yolo_processor = YOLOProcessor(model_path)
         self.is_running = True
         self._is_finished = False
 
@@ -32,15 +31,13 @@ class YOLODetection(QThread):
                 self._is_finished = True
                 return
 
-            # 检查模型文件
-            if not os.path.exists(self.model_path):
+            # 加载模型
+            if not self.yolo_processor.load_model():
                 self.log_message.emit(f"错误：模型文件不存在 {self.model_path}")
                 self.detection_finished.emit("error")
                 self._is_finished = True
                 return
 
-            # 加载模型
-            model = YOLO(self.model_path, task='detect')
             self.log_message.emit("模型加载成功")
 
             # 获取图片文件
@@ -57,12 +54,6 @@ class YOLODetection(QThread):
 
             total_files = len(image_files)
             self.log_message.emit(f"找到 {total_files} 个图片文件")
-
-            # 创建输出目录
-            photo_dir = "TestResult/result_photo"
-            txt_dir = "TestResult/result_txt"
-            os.makedirs(photo_dir, exist_ok=True)
-            os.makedirs(txt_dir, exist_ok=True)
 
             # 处理图片
             processed_count = 0
@@ -83,21 +74,25 @@ class YOLODetection(QThread):
 
                 try:
                     # 检测图片
-                    results = model(img_path)
+                    result, error = self.yolo_processor.process_image(img_path)
+
+                    if error:
+                        self.log_message.emit(f"处理图片失败: {error}")
+                        continue
+
                     file_name = os.path.splitext(os.path.basename(img_path))[0]
 
-                    # 保存检测图片
-                    result_img = results[0].plot()
-                    result_img_path = f"{photo_dir}/{file_name}_detected.jpg"
-                    cv2.imwrite(result_img_path, result_img)
-
                     # 保存检测结果
-                    txt_path = f"{txt_dir}/{file_name}_results.txt"
-                    self.save_results(results[0], txt_path, file_name)
+                    result_img_path, save_error = self.yolo_processor.save_results(
+                        result, "TestResult", file_name
+                    )
 
-                    detected_count = len(results[0].boxes) if results[0].boxes else 0
-                    self.log_message.emit(f"完成: {file_name} - 检测到 {detected_count} 个目标")
-                    processed_count += 1
+                    if result_img_path:
+                        detected_count = len(result.boxes) if result.boxes else 0
+                        self.log_message.emit(f"完成: {file_name} - 检测到 {detected_count} 个目标")
+                        processed_count += 1
+                    else:
+                        self.log_message.emit(f"保存结果失败: {save_error}")
 
                 except Exception as e:
                     self.log_message.emit(f"处理图片 {os.path.basename(img_path)} 时出错: {str(e)}")
@@ -117,28 +112,3 @@ class YOLODetection(QThread):
             self.log_message.emit(f"检测过程发生错误: {str(e)}")
             self.detection_finished.emit("error")
             self._is_finished = True
-
-    def save_results(self, result, txt_path, image_name):
-        """保存检测结果"""
-        try:
-            with open(txt_path, 'w', encoding='utf-8') as f:
-                f.write(f"图片: {image_name}\n")
-                f.write(f"时间: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write("=" * 40 + "\n")
-
-                if result.boxes and len(result.boxes) > 0:
-                    f.write(f"检测到 {len(result.boxes)} 个目标:\n\n")
-                    for i, box in enumerate(result.boxes):
-                        xyxy = box.xyxy[0].cpu().numpy()
-                        conf = box.conf[0].cpu().numpy()
-                        cls = int(box.cls[0].cpu().numpy())
-
-                        f.write(f"目标 {i + 1}:\n")
-                        f.write(f"  类别: {cls}\n")
-                        f.write(f"  置信度: {conf:.3f}\n")
-                        f.write(f"  位置: {xyxy}\n")
-                        f.write("-" * 20 + "\n")
-                else:
-                    f.write("未检测到目标\n")
-        except Exception as e:
-            self.log_message.emit(f"保存结果失败: {str(e)}")

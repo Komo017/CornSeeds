@@ -9,12 +9,13 @@ from PySide6.QtGui import QPixmap, QImage
 
 # 导入工业相机UI文件
 from uipy.industrial_camera_ui import Ui_MainWindow
-
+from modules.yolo_processor import YOLOProcessor
 
 class IndustrialCameraWindow(QMainWindow):
     # 定义关闭信号
     close_signal = Signal()
 
+    """初始化"""
     def __init__(self):
         super().__init__()
 
@@ -27,17 +28,26 @@ class IndustrialCameraWindow(QMainWindow):
         self.is_camera_connected = False
         self.current_image = None
 
+        # 初始化yolo
+        self.yolo_processor = YOLOProcessor()
+
         # 自动拍照相关变量
         self.auto_capture_timer = QTimer()
         self.is_auto_capturing = False
-        self.capture_interval = 100  # 0.1秒 = 100毫秒
+        self.capture_interval = 1000  # 1s
         self.auto_photo_count = 0
 
-        # 实时预览定时器 - 新增
+        # 新增YOLO同步处理定时器
+        self.yolo_update_timer = QTimer()
+        self.yolo_update_timer.timeout.connect(self.sync_yolo_processing)  # 新增：连接定时器
+        self.yolo_update_interval = 500  # 0.5秒检查一次新图片  # 新增
+        self.last_processed_count = 0  # 记录已处理的照片数量  # 新增
+
+        # 实时预览定时器
         self.preview_timer = QTimer()
         self.preview_interval = 30  # 30毫秒，约33fps
 
-        # 手动拍照暂停定时器 - 新增
+        # 手动拍照暂停定时器
         self.manual_capture_pause_timer = QTimer()
         self.manual_capture_pause_timer.setSingleShot(True)  # 单次定时器
         self.manual_capture_pause_timer.timeout.connect(self.resume_preview_after_manual_capture)
@@ -102,6 +112,8 @@ class IndustrialCameraWindow(QMainWindow):
         # 开始实时预览 - 新增
         self.start_preview()
 
+    """页面和UI控制函数"""
+
     def switch_page(self, index):
         """切换页面"""
         self.ui.stackedWidget.setCurrentIndex(index)
@@ -113,12 +125,22 @@ class IndustrialCameraWindow(QMainWindow):
         if index == 1 and self.is_auto_capturing:
             self.update_auto_capture_buttons(True)
 
-        # 根据页面控制实时预览 - 新增
+        # 根据页面控制实时预览
         if index == 0 or index == 1:  # 手动拍照或自动拍照页面
             if not self.is_auto_capturing:  # 自动拍照页面只有在未拍照时才显示预览
                 self.start_preview()
+            else:
+                self.stop_preview()  # 自动拍照时不显示预览
         else:
             self.stop_preview()
+
+        # 如果是YOLO页面，开始处理最近的图片
+        if index == 2:  # showYoloPage
+            self.start_yolo_processing()
+            self.yolo_update_timer.start(self.yolo_update_interval)
+            print("yolo处理中...")
+        else:
+            self.yolo_update_timer.stop()
 
     def update_button_styles(self, active_index):
         """更新按钮高亮样式"""
@@ -126,7 +148,7 @@ class IndustrialCameraWindow(QMainWindow):
         left_buttons = [
             self.ui.manualPhoto,
             self.ui.autoPhoto,
-            self.ui.ratePhoto,
+            self.ui.autoDetection,
             self.ui.RGBsettings,
             self.ui.HSVchannel,
             self.ui.Configuration,
@@ -163,6 +185,106 @@ class IndustrialCameraWindow(QMainWindow):
             else:
                 button.setStyleSheet(normal_style)
 
+    """YOLO处理相关函数"""
+    def start_yolo_processing(self):
+        """开始YOLO处理并显示结果"""
+        try:
+            # 获取最新的照片目录
+            base_dir = "captured_photos"
+            today = datetime.now().strftime("%Y-%m-%d")
+            photo_dir = os.path.join(base_dir, today)
+
+            # 获取最新的4张图片
+            latest_images = self.yolo_processor.get_latest_images(photo_dir, 4)
+
+            if not latest_images:
+                print("没有找到图片文件")
+                return
+
+            # 处理每张图片并显示结果
+            for i, img_path in enumerate(latest_images):
+                if i >= 4:  # 最多显示4张
+                    break
+
+                # 使用YOLO处理图片
+                result, error = self.yolo_processor.process_image(img_path)
+
+                if error:
+                    print(f"处理图片失败: {error}")
+                    continue
+
+                # 保存处理结果
+                file_name = os.path.splitext(os.path.basename(img_path))[0]
+                result_dir = "TestResult"
+
+                result_img_path, txt_path = self.yolo_processor.save_results(
+                    result, result_dir, file_name
+                )
+
+                if result_img_path:
+                    # 在对应的QLabel中显示图片
+                    self.display_yolo_image(result_img_path, i)
+                    detected_count = len(result.boxes) if result.boxes else 0  # 新增
+                    print(f"✅ YOLO处理完成: {file_name} - 检测到 {detected_count} 个目标")  # 修改
+                else:
+                    print(f"保存结果失败: {txt_path}")  # 这里txt_path实际上是错误信息
+
+        except Exception as e:
+            print(f"YOLO处理启动错误: {e}")
+
+    def sync_yolo_processing(self):  # ← 放在这里，在 start_yolo_processing 之后
+        """同步YOLO处理 - 检查新照片并立即处理"""
+        try:
+            # 获取最新的照片目录
+            base_dir = "captured_photos"
+            today = datetime.now().strftime("%Y-%m-%d")
+            photo_dir = os.path.join(base_dir, today)
+
+            if not os.path.exists(photo_dir):
+                return
+
+            # 获取所有图片文件
+            image_files = []
+            for file in os.listdir(photo_dir):
+                if file.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp')):
+                    file_path = os.path.join(photo_dir, file)
+                    image_files.append((file_path, os.path.getmtime(file_path)))
+
+            # 按修改时间排序，最新的在前
+            image_files.sort(key=lambda x: x[1], reverse=True)
+
+            # 如果有新照片且当前在YOLO页面
+            if len(image_files) > self.last_processed_count and self.ui.stackedWidget.currentIndex() == 2:
+                print(f"🔄 检测到 {len(image_files) - self.last_processed_count} 张新照片，开始YOLO处理...")
+                self.last_processed_count = len(image_files)
+                self.start_yolo_processing()
+
+        except Exception as e:
+            print(f"YOLO同步处理错误: {e}")
+
+    def display_yolo_image(self, image_path, index):
+        """在YOLO页面的对应位置显示图片"""
+        try:
+            # 根据索引确定显示在哪个QLabel
+            display_labels = [
+                self.ui.resultshow1,  # 索引0 - 最新
+                self.ui.resultshow2,  # 索引1 - 第二新
+                self.ui.resultshow3,  # 索引2 - 第三新
+                self.ui.resultshow4  # 索引3 - 第四新
+            ]
+
+            if index < len(display_labels):
+                # 读取并显示图片
+                image = cv2.imread(image_path)
+                if image is not None:
+                    self.display_image(image, display_labels[index])
+                else:
+                    print(f"无法读取图片: {image_path}")
+
+        except Exception as e:
+            print(f"显示YOLO图片错误: {e}")
+
+    """相机控制函数"""
     def setup_camera(self):
         """初始化相机"""
         try:
@@ -179,6 +301,41 @@ class IndustrialCameraWindow(QMainWindow):
             self.is_camera_connected = False
             print(f"相机初始化错误: {e}")
 
+    def start_preview(self):
+        """开始实时预览"""
+        if self.is_camera_connected and not self.preview_timer.isActive():
+            self.preview_timer.start(self.preview_interval)
+            print("开始实时预览")
+
+    def stop_preview(self):
+        """停止实时预览"""
+        if self.preview_timer.isActive():
+            self.preview_timer.stop()
+            print("停止实时预览")
+
+    def update_preview(self):
+        """更新实时预览画面"""
+        if not self.is_camera_connected:
+            return
+
+        try:
+            ret, frame = self.camera.read()
+            if ret:
+                self.current_image = frame
+
+                # 根据当前页面在对应的QLabel中显示实时画面
+                current_page = self.ui.stackedWidget.currentIndex()
+                if current_page == 0:  # 手动拍照页面
+                    self.display_image(frame, self.ui.showPhoto)
+                elif current_page == 1:  # 自动拍照页面
+                    if not self.is_auto_capturing:  # 只有在未拍照时才显示预览
+                        self.display_image(frame, self.ui.showPhoto2)
+
+        except Exception as e:
+            print(f"实时预览错误: {e}")
+
+    """拍照功能函数"""
+
     def capture_single_photo(self):
         """单次拍照"""
         if not self.is_camera_connected:
@@ -194,6 +351,9 @@ class IndustrialCameraWindow(QMainWindow):
                 self.current_image = frame
                 self.display_image(frame, self.ui.showPhoto)
                 self.save_image(frame, "manual")
+
+                if self.ui.stackedWidget.currentIndex() == 2:  # 如果在YOLO页面
+                    QTimer.singleShot(100, self.start_yolo_processing)
 
                 # 启动0.5秒的暂停定时器
                 self.manual_capture_pause_timer.start(500)  # 500毫秒 = 0.5秒
@@ -227,11 +387,16 @@ class IndustrialCameraWindow(QMainWindow):
 
         self.is_auto_capturing = True
         self.auto_photo_count = 0
+        # 重置已处理照片计数
+        self.last_processed_count = 0
         self.auto_capture_timer.start(self.capture_interval)
         self.update_auto_capture_buttons(True)
 
-        # 开始自动拍照时停止预览 - 新增
+        # 开始自动拍照时停止预览
         self.stop_preview()
+
+        if self.ui.stackedWidget.currentIndex() == 2:
+            self.yolo_update_timer.start(self.yolo_update_interval)
 
     def pause_auto_capture(self):
         """暂停自动拍照"""
@@ -280,7 +445,7 @@ class IndustrialCameraWindow(QMainWindow):
                 self.save_image(frame, "auto")
                 self.auto_photo_count += 1
 
-                # 更新状态显示（可选）
+                # 更新状态显示
                 if self.auto_photo_count % 10 == 0:  # 每10张显示一次计数
                     print(f"自动拍照计数: {self.auto_photo_count}")
 
@@ -303,6 +468,7 @@ class IndustrialCameraWindow(QMainWindow):
             self.ui.stopPhoto.setEnabled(False)
             self.ui.endPhoto.setEnabled(False)
 
+    """图像处理函数"""
     def display_image(self, image, display_label):
         """在指定的QLabel中显示图像"""
         try:
@@ -353,45 +519,13 @@ class IndustrialCameraWindow(QMainWindow):
             success = cv2.imwrite(filepath, image)
             if success:
                 print(f"图像已保存: {filepath}")
+                return filepath   # 返回保存的路径
             else:
                 print("图像保存失败")
+                return None
 
         except Exception as e:
             print(f"保存图像错误: {e}")
-
-    # ========== 新增的实时预览功能 ==========
-    def start_preview(self):
-        """开始实时预览"""
-        if self.is_camera_connected and not self.preview_timer.isActive():
-            self.preview_timer.start(self.preview_interval)
-            print("开始实时预览")
-
-    def stop_preview(self):
-        """停止实时预览"""
-        if self.preview_timer.isActive():
-            self.preview_timer.stop()
-            print("停止实时预览")
-
-    def update_preview(self):
-        """更新实时预览画面"""
-        if not self.is_camera_connected:
-            return
-
-        try:
-            ret, frame = self.camera.read()
-            if ret:
-                self.current_image = frame
-
-                # 根据当前页面在对应的QLabel中显示实时画面
-                current_page = self.ui.stackedWidget.currentIndex()
-                if current_page == 0:  # 手动拍照页面
-                    self.display_image(frame, self.ui.showPhoto)
-                elif current_page == 1:  # 自动拍照页面
-                    if not self.is_auto_capturing:  # 只有在未拍照时才显示预览
-                        self.display_image(frame, self.ui.showPhoto2)
-
-        except Exception as e:
-            print(f"实时预览错误: {e}")
 
     def closeEvent(self, event):
         """关闭窗口时的处理"""
@@ -399,6 +533,10 @@ class IndustrialCameraWindow(QMainWindow):
             # 停止自动拍照
             if self.is_auto_capturing:
                 self.auto_capture_timer.stop()
+
+            #  停止YOLO同步定时器
+            if self.yolo_update_timer.isActive():  # 新增
+                self.yolo_update_timer.stop()  # 新增
 
             # 停止实时预览 - 新增
             if self.preview_timer.isActive():
