@@ -155,6 +155,8 @@ class MainWindow(QMainWindow):
             self.hide()
             self.industrial_window.show()
 
+            QTimer.singleShot(10, self._show_industrial_window)
+
             print("打开工业相机窗口")
 
         except ImportError as e:
@@ -163,6 +165,12 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"打开工业相机窗口错误: {e}")
             QMessageBox.critical(self, "错误", f"打开工业相机窗口失败: {str(e)}")
+
+    def _show_industrial_window(self):
+        """显示工业相机窗口"""
+        if self.industrial_window:
+            self.hide()
+            self.industrial_window.show()
 
     def on_industrial_window_closed(self):
         """工业相机窗口关闭时的处理"""
@@ -275,45 +283,6 @@ class MainWindow(QMainWindow):
             # 延迟执行，避免频繁发送
             QTimer.singleShot(500, self._send_updated_out_data)
 
-    # def _send_updated_out_data(self):
-    #     """发送更新后的OUT数据到PLC"""
-    #     try:
-    #         if not hasattr(self, 'plc_tcp_client') or not self.plc_tcp_client.is_connected:
-    #             return
-    #
-    #         # 获取当前的OUT1-OUT10数据
-    #         write_data = []
-    #         out_inputs = [
-    #             self.ui.out1, self.ui.out2, self.ui.out3, self.ui.out4, self.ui.out5,
-    #             self.ui.out6, self.ui.out7, self.ui.out8, self.ui.out9, self.ui.out10
-    #         ]
-    #
-    #         for input_field in out_inputs:
-    #             text = input_field.text().strip()
-    #             if text:
-    #                 try:
-    #                     write_data.append(int(text))
-    #                 except:
-    #                     write_data.append(0)
-    #             else:
-    #                 write_data.append(0)
-    #
-    #         print(f"实时发送数据: {write_data}")
-    #
-    #         ip = self.ui.PLCIP.text().strip()
-    #         port = int(self.ui.PLCPort.text().strip())
-    #
-    #         # 发送数据到PLC
-    #         success, result = self.plc_tcp_client.connect_and_communicate(ip, port, write_data)
-    #         if success:
-    #             # 更新IN1-IN10显示
-    #             self._update_in_display(result[10:20])
-    #         else:
-    #             print(f"实时发送失败: {result}")
-    #
-    #     except Exception as e:
-    #         print(f"实时发送错误: {e}")
-
     def _send_updated_out_data(self):
         """发送更新后的OUT数据到PLC"""
         try:
@@ -352,15 +321,13 @@ class MainWindow(QMainWindow):
             print(f"实时发送错误: {e}")
 
     def on_plc_data_received(self, data):
-        """PLC数据接收回调 """
+        """PLC数据接收 """
         try:
             print(f"接收到PLC数据: {data}")
             if len(data) >= 20:
                 # 提取后10个数据（索引10-19）
                 last_10_data = data[10:20]
                 print(f"提取后10位数据: {last_10_data}")
-                # 使用QTimer确保在主线中执行UI操作
-                # QTimer.singleShot(0, lambda: self._update_plc_display(last_10_data))
                 self._update_plc_display(last_10_data)
             else:
                 print(f"数据长度不足20: {len(data)}")
@@ -527,7 +494,6 @@ def main():
         print(f"应用程序启动失败: {e}")
         QMessageBox.critical(None, "启动错误", f"应用程序启动失败: {str(e)}")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()

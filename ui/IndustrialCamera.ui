@@ -92,7 +92,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="ratePhoto">
+      <widget class="QPushButton" name="autoDetection">
        <property name="font">
         <font>
          <pointsize>15</pointsize>
@@ -100,7 +100,7 @@
         </font>
        </property>
        <property name="text">
-        <string>拍照速率</string>
+        <string>溯洄</string>
        </property>
       </widget>
      </item>
@@ -181,7 +181,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="manualPage">
      <widget class="QLabel" name="showPhoto">
@@ -263,6 +263,56 @@
       <property name="text">
        <string>结束拍照</string>
       </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="showYoloPage">
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>691</width>
+        <height>501</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="resultshow1">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="resultshow3">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QLabel" name="resultshow2">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="resultshow4">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </widget>
     </widget>
    </widget>
