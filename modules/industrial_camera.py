@@ -530,31 +530,53 @@ class IndustrialCameraWindow(QMainWindow):
     def closeEvent(self, event):
         """关闭窗口时的处理"""
         try:
-            # 停止自动拍照
-            if self.is_auto_capturing:
-                self.auto_capture_timer.stop()
-
-            #  停止YOLO同步定时器
-            if self.yolo_update_timer.isActive():  # 新增
-                self.yolo_update_timer.stop()  # 新增
-
-            # 停止实时预览 - 新增
+            # 停止实时预览（因为预览需要显示界面）
             if self.preview_timer.isActive():
                 self.preview_timer.stop()
+                print("停止实时预览")
 
-            # 停止手动拍照暂停定时器
-            if self.manual_capture_pause_timer.isActive():
-                self.manual_capture_pause_timer.stop()
-
-            # 释放相机资源
-            if self.camera is not None:
-                self.camera.release()
-
-            # 发送关闭信号
+            # 发送关闭信号（实际上是隐藏信号）
             self.close_signal.emit()
 
-            print("工业相机窗口关闭完成")
-        except Exception as e:
-            print(f"关闭窗口时出现错误: {e}")
+            # 隐藏窗口而不是关闭
+            self.hide()
 
-        event.accept()
+            print("工业相机窗口已隐藏，拍照和YOLO处理继续在后台运行")
+
+            # 阻止默认的关闭行为
+            event.ignore()
+
+        except Exception as e:
+            print(f"隐藏窗口时出现错误: {e}")
+            event.accept()
+
+    # def closeEvent(self, event):
+    #     """关闭窗口时的处理"""
+    #     try:
+    #         # 停止自动拍照
+    #         # if self.is_auto_capturing:
+    #         #     self.auto_capture_timer.stop()
+    #
+    #         #  停止YOLO同步定时器
+    #         # if self.yolo_update_timer.isActive():
+    #         #     self.yolo_update_timer.stop()
+    #
+    #         # 停止实时预览
+    #         if self.preview_timer.isActive():
+    #             self.preview_timer.stop()
+    #
+    #         # 停止手动拍照暂停定时器
+    #         if self.manual_capture_pause_timer.isActive():
+    #             self.manual_capture_pause_timer.stop()
+    #
+    #         # 释放相机资源
+    #         # if self.camera is not None:
+    #         #     self.camera.release()
+    #
+    #         # 发送关闭信号
+    #         self.close_signal.emit()
+    #
+    #         print("工业相机窗口关闭完成")
+    #     except Exception as e:
+    #         print(f"关闭窗口时出现错误: {e}")
+    #         event.accept()

@@ -155,6 +155,10 @@ class MainWindow(QMainWindow):
             self.hide()
             self.industrial_window.show()
 
+            # 如果之前停止了，恢复预览
+            if not self.industrial_window.preview_timer.isActive():
+                self.industrial_window.start_preview()
+
             QTimer.singleShot(10, self._show_industrial_window)
 
             print("打开工业相机窗口")
@@ -174,7 +178,13 @@ class MainWindow(QMainWindow):
 
     def on_industrial_window_closed(self):
         """工业相机窗口关闭时的处理"""
-        self.industrial_window = None
+        #  修改，不清理引用
+        #  self.industrial_window = None
+
+        # 只是隐藏工业相机窗口，不销毁
+        if self.industrial_window:
+            self.industrial_window.hide()  # 隐藏而不是关闭
+
         self.show()  # 重新显示主窗口
         print("工业相机窗口已关闭，返回主界面")
 
@@ -357,13 +367,13 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"更新IN显示错误: {e}")
 
-    def closeEvent(self, event):
-        """关闭事件处理"""
-        if hasattr(self, 'ind_tcp_client'):
-            self.ind_tcp_client.disconnect()
-        if hasattr(self, 'plc_tcp_client'):
-            self.plc_tcp_client.disconnect()
-        event.accept()
+    # def closeEvent(self, event):
+    #     """关闭事件处理"""
+    #     if hasattr(self, 'ind_tcp_client'):
+    #         self.ind_tcp_client.disconnect()
+    #     if hasattr(self, 'plc_tcp_client'):
+    #         self.plc_tcp_client.disconnect()
+    #     event.accept()
 
     ###################################################################################################################
     """yolo"""
@@ -455,13 +465,24 @@ class MainWindow(QMainWindow):
             print(f"完成处理错误: {e}")
 
     ###################################################################################################################
-
+    """关闭事件"""
     def closeEvent(self, event):
         """关闭事件处理"""
         try:
             # 断开所有通讯连接
             # self.ind_communication.disconnect()
             # self.plc_communication.disconnect()
+
+            # 断开所有TCP连接
+            if hasattr(self, 'ind_tcp_client'):
+                self.ind_tcp_client.disconnect()
+            if hasattr(self, 'plc_tcp_client'):
+                self.plc_tcp_client.disconnect()
+
+            # 停止YOLO检测线程
+            if self.yolo_thread and self.yolo_thread.isRunning():
+                self.yolo_thread.stop_detection()
+                self.yolo_thread.wait()
 
             # 关闭工业相机窗口
             if self.industrial_window is not None:
