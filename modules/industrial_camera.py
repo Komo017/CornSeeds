@@ -31,6 +31,9 @@ class IndustrialCameraWindow(QMainWindow):
         # 初始化yolo
         self.yolo_processor = YOLOProcessor()
 
+        # 轮播显示相关变量
+        self.current_yolo_images = [None, None, None, None]
+
         # 自动拍照相关变量
         self.auto_capture_timer = QTimer()
         self.is_auto_capturing = False
@@ -186,51 +189,134 @@ class IndustrialCameraWindow(QMainWindow):
                 button.setStyleSheet(normal_style)
 
     """YOLO处理相关函数"""
+    # def start_yolo_processing(self):
+    #     """开始YOLO处理并显示结果"""
+    #     try:
+    #         # 获取最新的照片目录
+    #         base_dir = "captured_photos"
+    #         today = datetime.now().strftime("%Y-%m-%d")
+    #         photo_dir = os.path.join(base_dir, today)
+    #
+    #         # 获取最新的4张图片
+    #         latest_images = self.yolo_processor.get_latest_images(photo_dir, 4)
+    #
+    #         if not latest_images:
+    #             print("没有找到图片文件")
+    #             return
+    #
+    #         # 处理每张图片并显示结果
+    #         for i, img_path in enumerate(latest_images):
+    #             if i >= 4:  # 最多显示4张
+    #                 break
+    #
+    #             # 使用YOLO处理图片
+    #             result, error = self.yolo_processor.process_image(img_path)
+    #
+    #             if error:
+    #                 print(f"处理图片失败: {error}")
+    #                 continue
+    #
+    #             # 保存处理结果
+    #             file_name = os.path.splitext(os.path.basename(img_path))[0]
+    #             result_dir = "TestResult"
+    #
+    #             result_img_path, txt_path = self.yolo_processor.save_results(
+    #                 result, result_dir, file_name
+    #             )
+    #
+    #             if result_img_path:
+    #                 # 在对应的QLabel中显示图片
+    #                 self.display_yolo_image(result_img_path, i)
+    #                 detected_count = len(result.boxes) if result.boxes else 0  # 新增
+    #                 print(f"✅ YOLO处理完成: {file_name} - 检测到 {detected_count} 个目标")  # 修改
+    #             else:
+    #                 print(f"保存结果失败: {txt_path}")  # 这里txt_path实际上是错误信息
+    #
+    #     except Exception as e:
+    #         print(f"YOLO处理启动错误: {e}")
+
     def start_yolo_processing(self):
         """开始YOLO处理并显示结果"""
         try:
-            # 获取最新的照片目录
+            # 优先显示当前的轮播内容
+            if any(img_path for img_path in self.current_yolo_images if img_path):
+                print("显示当前轮播内容")
+                for i, img_path in enumerate(self.current_yolo_images):
+                    if img_path and os.path.exists(img_path):
+                        img = cv2.imread(img_path)
+                        if img is not None:
+                            # 直接显示，不重新处理
+                            self.display_image(img, self.get_yolo_display_label(i))
+                return
+
+            # 如果没有轮播内容，才使用原来的逻辑（从文件夹加载）
+            print("没有轮播内容，从文件夹加载最新图片")
             base_dir = "captured_photos"
             today = datetime.now().strftime("%Y-%m-%d")
             photo_dir = os.path.join(base_dir, today)
 
-            # 获取最新的4张图片
-            latest_images = self.yolo_processor.get_latest_images(photo_dir, 4)
-
-            if not latest_images:
-                print("没有找到图片文件")
+            if not os.path.exists(photo_dir):
                 return
 
-            # 处理每张图片并显示结果
+            # 获取最新的4张图片
+            image_files = []
+            for file in os.listdir(photo_dir):
+                if file.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp')):
+                    file_path = os.path.join(photo_dir, file)
+                    image_files.append((file_path, os.path.getmtime(file_path)))
+
+            # 按时间排序，最新的在前
+            image_files.sort(key=lambda x: x[1], reverse=True)
+            latest_images = [file[0] for file in image_files[:4]]
+
+            # 显示图片
             for i, img_path in enumerate(latest_images):
-                if i >= 4:  # 最多显示4张
-                    break
-
-                # 使用YOLO处理图片
-                result, error = self.yolo_processor.process_image(img_path)
-
-                if error:
-                    print(f"处理图片失败: {error}")
-                    continue
-
-                # 保存处理结果
-                file_name = os.path.splitext(os.path.basename(img_path))[0]
-                result_dir = "TestResult"
-
-                result_img_path, txt_path = self.yolo_processor.save_results(
-                    result, result_dir, file_name
-                )
-
-                if result_img_path:
-                    # 在对应的QLabel中显示图片
-                    self.display_yolo_image(result_img_path, i)
-                    detected_count = len(result.boxes) if result.boxes else 0  # 新增
-                    print(f"✅ YOLO处理完成: {file_name} - 检测到 {detected_count} 个目标")  # 修改
-                else:
-                    print(f"保存结果失败: {txt_path}")  # 这里txt_path实际上是错误信息
+                self.display_yolo_image(img_path, i)
 
         except Exception as e:
             print(f"YOLO处理启动错误: {e}")
+
+    def get_yolo_display_label(self, index):
+        """根据索引获取对应的显示标签"""
+        display_labels = [
+            self.ui.resultshow1,
+            self.ui.resultshow2,
+            self.ui.resultshow3,
+            self.ui.resultshow4
+        ]
+        return display_labels[index] if index < len(display_labels) else None
+
+    def process_photo_with_yolo(self, image_path):
+        """对照片进行YOLO处理并更新显示"""
+        try:
+            # 使用YOLO处理图片
+            result, error = self.yolo_processor.process_image(image_path)
+
+            if error:
+                print(f"YOLO处理失败: {error}")
+                return
+
+            # 保存处理结果
+            file_name = os.path.splitext(os.path.basename(image_path))[0]
+            result_dir = "TestResult"
+
+            result_img_path, txt_path = self.yolo_processor.save_results(
+                result, result_dir, file_name
+            )
+
+            if result_img_path:
+                # 更新YOLO页面的显示（如果当前在YOLO页面）
+                # if self.ui.stackedWidget.currentIndex() == 2:
+                #     self.update_yolo_display(result_img_path)
+
+                self.rotate_yolo_display(result_img_path)
+
+                detected_count = len(result.boxes) if result.boxes else 0
+            else:
+                print(f"保存YOLO结果失败: {txt_path}")
+
+        except Exception as e:
+            print(f"YOLO处理错误: {e}")
 
     def sync_yolo_processing(self):  # ← 放在这里，在 start_yolo_processing 之后
         """同步YOLO处理 - 检查新照片并立即处理"""
@@ -395,8 +481,8 @@ class IndustrialCameraWindow(QMainWindow):
         # 开始自动拍照时停止预览
         self.stop_preview()
 
-        if self.ui.stackedWidget.currentIndex() == 2:
-            self.yolo_update_timer.start(self.yolo_update_interval)
+        # if self.ui.stackedWidget.currentIndex() == 2:
+        #     self.yolo_update_timer.start(self.yolo_update_interval)
 
     def pause_auto_capture(self):
         """暂停自动拍照"""
@@ -442,8 +528,12 @@ class IndustrialCameraWindow(QMainWindow):
             if ret:
                 self.current_image = frame
                 self.display_image(frame, self.ui.showPhoto2)
-                self.save_image(frame, "auto")
+                # self.save_image(frame, "auto")
+                saved_path = self.save_image(frame, "auto")
                 self.auto_photo_count += 1
+
+                if saved_path:
+                    self.process_photo_with_yolo(saved_path)
 
                 # 更新状态显示
                 if self.auto_photo_count % 10 == 0:  # 每10张显示一次计数
@@ -495,6 +585,54 @@ class IndustrialCameraWindow(QMainWindow):
 
         except Exception as e:
             print(f"显示图像错误: {e}")
+
+    # def update_yolo_display(self, result_img_path):
+    #     """更新YOLO页面的图片显示"""
+    #     try:
+    #         # 读取处理后的图片
+    #         result_image = cv2.imread(result_img_path)
+    #         if result_image is not None:
+    #             # 显示在第一位置
+    #             self.display_image(result_image, self.ui.resultshow1)
+    #         else:
+    #             print(f"无法读取YOLO处理结果: {result_img_path}")
+    #
+    #     except Exception as e:
+    #         print(f"更新YOLO显示错误: {e}")
+
+    def rotate_yolo_display(self, new_image_path):
+        """轮播显示最新的4张YOLO处理结果"""
+        try:
+            display_labels = [
+                self.ui.resultshow1,  # 最新
+                self.ui.resultshow2,  # 第二新
+                self.ui.resultshow3,  # 第三新
+                self.ui.resultshow4  # 第四新
+            ]
+
+            # 读取新图片
+            new_image = cv2.imread(new_image_path)
+            if new_image is None:
+                print(f"无法读取图片: {new_image_path}")
+                return
+
+            # 将图片依次后移（新图片插入到最前面）
+            self.current_yolo_images[3] = self.current_yolo_images[2]  # 第三张移到第四张
+            self.current_yolo_images[2] = self.current_yolo_images[1]  # 第二张移到第三张
+            self.current_yolo_images[1] = self.current_yolo_images[0]  # 第一张移到第二张
+            self.current_yolo_images[0] = new_image_path  # 新图片放到第一张
+
+            # 更新所有位置的显示
+            for i, img_path in enumerate(self.current_yolo_images):
+                if img_path and os.path.exists(img_path):
+                    img = cv2.imread(img_path)
+                    if img is not None:
+                        self.display_image(img, display_labels[i])
+
+            print(f"轮播更新完成，当前显示 {len([x for x in self.current_yolo_images if x])} 张图片")
+
+        except Exception as e:
+            print(f"轮播显示错误: {e}")
 
     def save_image(self, image, mode="manual"):
         """保存图像到文件"""
